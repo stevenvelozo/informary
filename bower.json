@@ -1,0 +1,25 @@
+{
+  "name": "informary",
+  "version": "1.0.0",
+  "description": "Form data marshalling library.",
+  "main": "dist/informary.min.js",
+  "authors": [
+    "steven velozo <steven@velozo.com>"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/stevenvelozo/informary",
+  "moduleType": [
+    "globals",
+    "node"
+  ],
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "coverage",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+  }
+}
