@@ -171,7 +171,6 @@ class Informary
 				if (this._Settings.DebugLog)
 				{
 					this.log.logTimeDelta(`Informary Form->Data parsing complete`);
-					this.log.debug(`Informary Form->Data recursive parsing exit [${pParentPropertyAddress}]`);
 				}
 				if (pError)
 				{
