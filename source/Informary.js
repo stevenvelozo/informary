@@ -158,7 +158,7 @@ class Informary
 		this._Dependencies.async.eachOfSeries(tmpFormValues,
 			(pValue, pKey, fRecursiveCallback)=>
 			{
-				let tmpFormValueAddress = this._Dependencies.jquery(pValue).attr('data-i-hash');
+				let tmpFormValueAddress = this._Dependencies.jquery(pValue).attr('data-i-datum');
 				let tmpFormValue = this._Dependencies.jquery(pValue).val();
 				// If the value is non existant, set it to null
 				if (typeof(tmpFormValue) === 'undefined')
