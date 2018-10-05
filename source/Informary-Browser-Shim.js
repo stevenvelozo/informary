@@ -8,4 +8,9 @@
 */
 
 // Load the informary module into the browser global automatically.
-module.exports = require('./Informary.js');
+let libInformary = require('./Informary.js');
+
+if (typeof(window) === 'object')
+    window.Informary = libInformary;
+
+module.exports = libInformary;
