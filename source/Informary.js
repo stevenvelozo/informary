@@ -111,6 +111,8 @@ class Informary
 
 		let tmpFormValues = this._Dependencies.jquery(`input[data-i-form=${this._Settings.Form}]`);
 
+		let tmpUnknownValueIndex = 0;
+
 		let setValueAtAddress = (pObject, pAddress, pValue) =>
 		{
 			// Make sure pObject is an object
@@ -162,7 +164,15 @@ class Informary
 				let tmpFormValue = this._Dependencies.jquery(pValue).val();
 				// If the value is non existant, set it to null
 				if (typeof(tmpFormValue) === 'undefined')
+				{
 					tmpFormValue = null;
+				}
+				
+				if (typeof(tmpFormValueAddress) === 'undefined')
+				{
+					tmpFormValueAddress = '__ERROR.UnsetDatum.'+tmpUnknownValueIndex;
+					tmpUnknownValueIndex++;
+				}
 				setValueAtAddress(pRecordObject, tmpFormValueAddress, tmpFormValue);
 				return fRecursiveCallback();
 			},
