@@ -79,7 +79,7 @@ class Informary
 								this._Dependencies.jquery(tmpFormElement)[0].textContent = pValue;
 							// set the correct option to 'selected' for select tags
 							} else if (this._Dependencies.jquery(tmpFormElement)[0].tagName === 'SELECT') {
-								this._Dependencies.jquery(tmpFormElement + ` option[value="${pValue}"]`).prop('selected', true);
+								this._Dependencies.jquery(`select[data-i-form="${this._Settings.Form}"][data-i-datum="${tmpPropertyAddress}"] option[value="${pValue}"]`).prop('selected', true);
 							// otherwise just set the value for input
 							} else {
 								this._Dependencies.jquery(tmpFormElement).val(pValue);
