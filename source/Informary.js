@@ -122,8 +122,6 @@ class Informary
 			this.log.error('Invalid record object passed in!  Informary needs a Javascript object to put values into.');
 			return fCallback('Invalid record object passed in!  Informary needs a Javascript object to put values into.');
 		}
-
-		debugger;
 		let tmpFormValues = this._Dependencies.jquery(`
 				input[data-i-form=${this._Settings.Form}],
 				select[data-i-form=${this._Settings.Form}],
