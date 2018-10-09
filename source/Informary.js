@@ -178,7 +178,7 @@ class Informary
 		this._Dependencies.async.eachOfSeries(tmpFormValues,
 			(pValue, pKey, fRecursiveCallback)=>
 			{
-				let tmpFormValueAddress = this._Dependencies.jquery(pKey).attr('data-i-datum');
+				let tmpFormValueAddress = this._Dependencies.jquery(pValue).attr('data-i-datum');
 				let tmpFormValue;
 				// check to see which element type this is before trying to collect the value
 				if (this._Dependencies.jquery(pValue).tagName === 'TEXTAREA') {
