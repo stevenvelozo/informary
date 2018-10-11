@@ -68,9 +68,23 @@ class Informary
 						break;
 					// Otherwise marshal it into the form
 					default:
-						let tmpFormElement = this._Dependencies.jquery(`input[data-i-form="${this._Settings.Form}"][data-i-hash="${tmpPropertyAddress}"]`);
-						if (tmpFormElement.length > 0)
-							this._Dependencies.jquery(tmpFormElement).val(pValue);
+						let tmpFormElement = this._Dependencies.jquery(`
+								input[data-i-form="${this._Settings.Form}"][data-i-datum="${tmpPropertyAddress}"], 
+								select[data-i-form="${this._Settings.Form}"][data-i-datum="${tmpPropertyAddress}"],
+								textarea[data-i-form="${this._Settings.Form}"][data-i-datum="${tmpPropertyAddress}"]
+							`);
+						if (tmpFormElement.length > 0) {
+							// set the text area to the text content
+							if (this._Dependencies.jquery(tmpFormElement)[0].tagName === 'TEXTAREA') {
+								this._Dependencies.jquery(tmpFormElement)[0].textContent = pValue;
+							// set the correct option to 'selected' for select tags
+							} else if (this._Dependencies.jquery(tmpFormElement)[0].tagName === 'SELECT') {
+								this._Dependencies.jquery(`select[data-i-form="${this._Settings.Form}"][data-i-datum="${tmpPropertyAddress}"] option[value="${pValue}"]`).prop('selected', true);
+							// otherwise just set the value for input
+							} else {
+								this._Dependencies.jquery(tmpFormElement).val(pValue);
+							}
+						}	
 
 						return fRecursiveCallback();
 						break;
@@ -109,7 +123,11 @@ class Informary
 			return fCallback('Invalid record object passed in!  Informary needs a Javascript object to put values into.');
 		}
 
-		let tmpFormValues = this._Dependencies.jquery(`input[data-i-form=${this._Settings.Form}]`);
+		let tmpFormValues = this._Dependencies.jquery(`
+				input[data-i-form=${this._Settings.Form}],
+				select[data-i-form=${this._Settings.Form}],
+				textarea[data-i-form=${this._Settings.Form}]
+			`);
 
 		let tmpUnknownValueIndex = 0;
 
@@ -161,7 +179,13 @@ class Informary
 			(pValue, pKey, fRecursiveCallback)=>
 			{
 				let tmpFormValueAddress = this._Dependencies.jquery(pValue).attr('data-i-datum');
-				let tmpFormValue = this._Dependencies.jquery(pValue).val();
+				let tmpFormValue;
+				// check to see which element type this is before trying to collect the value
+				if (this._Dependencies.jquery(pValue).tagName === 'TEXTAREA') {
+					tmpFormValue = this._Dependencies.jquery(pValue).textContent;
+				} else {
+					tmpFormValue = this._Dependencies.jquery(pValue).val();
+				}
 				// If the value is non existant, set it to null
 				if (typeof(tmpFormValue) === 'undefined')
 				{
