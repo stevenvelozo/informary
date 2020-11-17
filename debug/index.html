@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="">
+        <meta name="author" content="">
+        <title>Sample Form</title>
+        <link href="bootstrap/css/bootstrap.css" rel="stylesheet">
+        <script src="../dist/informary.js"></script>
+        <script type="text/javascript">
+//<![CDATA[
+            // Properly initialize informary for our form, and tell it to be verbose in the console
+            var libInformary = new Informary({Form: "SampleForm", DebugLog: true});
+            // Pull informary's built-in version of JQUERY into the DOM for other libraries to use
+            window.$ = libInformary._Dependencies.jquery;
+            window.jQuery = window.$;
+
+            // Simple function to pull data from the form into the debug text area
+            var pullInformaryDataFromForm = function()
+            {
+                // Create an empty data object to stuff values into
+                var tmpDataObject = {};
+                libInformary.marshalFormToData(tmpDataObject,
+                    function(pError)
+                    {
+                        if (pError)
+                        {
+                            // The form marshalling had some kind of error!
+                            console.log('INFORMARY MARSHAL FROM FORMERROR: '+pError);
+                            console.log(JSON.stringify(tmpDataObject,null,4));
+                        }
+
+                        $('#informaryOutput').val(JSON.stringify(tmpDataObject,null,4));
+                    })
+            };
+
+            // Simple function to push data from debug text area to form
+            var pushInformaryDataToForm = function()
+            {
+                try
+                {
+                    // Create an empty data object to stuff values into
+                    var tmpDataObject = JSON.parse($("#informaryInput").val());
+                    libInformary.marshalDataToForm(tmpDataObject,
+                        function(pError)
+                        {
+                            if (pError)
+                            {
+                                // The form marshalling had some kind of error!
+                                console.log('INFORMARY MARSHAL TO FORM ERROR: '+pError);
+                                console.log(JSON.stringify(tmpDataObject,null,4));
+                            }
+
+                            $('#informaryOutput').val(JSON.stringify(tmpDataObject,null,4));
+                        });
+                }
+                catch (pError)
+                {
+                    console.log('ERROR Trying to stuff values into the form ... likely a JSON parsing error.');
+                    console.log('Message: '+pError);
+                }
+            };
+//]]>
+        </script>
+        <script src="bootstrap/js/bootstrap.min.js"></script>
+        <script type="text/javascript">
+//<![CDATA[
+// Create a default record to load, to test wkhtmltopdf rendering after informary data load
+var _SampleData = (
+{
+    "Header": {
+        "WorkDate": "2020-11-09",
+        "Inspector": "Billy Bob",
+        "Location": {
+            "Description": "SB I5 Milepost 678 near Redding",
+            "Station": "Station 10+1.054 RT"
+        },
+        "WorkCompleted": "on"
+    },
+    "Rows": {
+        "Row_1": {
+            "PersonnelName": "",
+            "Contractor": "",
+            "LineItem": "",
+            "Equipment": "",
+            "Hours": "",
+            "Description": ""
+        }
+    }
+})
+//]]>
+        </script>
+    </head>
+    <body class="bg-light">
+        <div class="container">
+            <div class="row mt-5">
+                <div class="col-md-12 mt-3"><h1>Informary Test Suite</div>
+                <div class="col-md-12" style="background-color:#ffffee;border-radius:10px;border:2px solid #353535;">
+                    <h4 class="mb-3 mt-3">Sample Form</h4>
+                    <form novalidate>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="workDate">Work Date</label>
+                                <input type="text" class="form-control" id="workDate" placeholder="e.g. 2010-05-19" value="" data-i-form="SampleForm" data-i-datum="Header.WorkDate">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="inspector">Inspector</label>
+                                <input type="text" class="form-control" id="inspector" placeholder="inspector name" value="" data-i-form="SampleForm" data-i-datum="Header.Inspector">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="location">Location</label>
+                            <input type="text" class="form-control" id="location" placeholder="I5 Milepost 214" data-i-form="SampleForm" data-i-datum="Header.Location.Description">
+                        </div>
+                        <div class="mb-3">
+                            <label for="location-extended">Station</label>
+                            <input type="text" class="form-control" id="location-extended" placeholder="Station 114+48 Lt" data-i-form="SampleForm" data-i-datum="Header.Location.Station">
+                        </div>
+                        <div class="custom-control custom-checkbox">
+                            <input type="checkbox" class="custom-control-input" id="work-completed" data-i-form="SampleForm" data-i-datum="Header.WorkCompleted">
+                            <label class="custom-control-label" for="work-completed">Work has been completed today</label>
+                        </div>
+                        <table class="table mt-3">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Personnel Name</th>
+                                    <th scope="col">Contractor</th>
+                                    <th scope="col">Line Item</th>
+                                    <th scope="col">Equipment</th>
+                                    <th scope="col">Hours</th>
+                                    <th scope="col">Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <input type="text" class="form-control" id="row_personnel_1" placeholder="name" data-i-form="SampleForm" data-i-datum="Rows.Row_1.PersonnelName">
+                                    </td>
+                                    <td>
+                                        <input type="text" class="form-control" id="row_contractor_1" placeholder="contractor" data-i-form="SampleForm" data-i-datum="Rows.Row_1.Contractor">
+                                    </td>
+                                    <td>
+                                        <input type="text" class="form-control" id="row_lineitem_1" placeholder="item" data-i-form="SampleForm" data-i-datum="Rows.Row_1.LineItem">
+                                    </td>
+                                    <td>
+                                        <input type="text" class="form-control" id="row_equipment_1" placeholder="equipment" data-i-form="SampleForm" data-i-datum="Rows.Row_1.Equipment">
+                                    </td>
+                                    <td>
+                                        <input type="text" class="form-control" id="row_hours_1" placeholder="hours" data-i-form="SampleForm" data-i-datum="Rows.Row_1.Hours">
+                                    </td>
+                                    <td>
+                                        <input type="text" class="form-control" id="row_description_1" placeholder="" data-i-form="SampleForm" data-i-datum="Rows.Row_1.Description">
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </form>
+                </div>
+            </div>
+
+            <!-- This below is just to help test informary functionality interactively -->
+            <div class="row mt-5">
+                <div class="col-md-12"  style="background-color:#eeffee;border-radius:10px;border:2px solid #353535;">
+                    <h4 class="mb-3 mt-3">Informary Data Testing</h4>
+                    <form novalidate>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">Informary Output</span>
+                            </div>
+                            <textarea class="form-control" aria-label="Informary-Output" style="min-height:6rem;height:24rem;max-height:40rem;" id="informaryOutput">(click the button below to populate this)</textarea>
+                        </div>
+                        <div class="input=group">
+                            <button type="button" class="btn btn-primary" onclick="pullInformaryDataFromForm()">Pull Data from Form</button>
+                        </div>
+
+                        <hr class="w-100 mb-5 mt-3" />
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">Informary Input</span>
+                            </div>
+                            <textarea class="form-control" aria-label="Informary-Input" style="min-height:6rem;height:24rem;max-height:40rem;" id="informaryInput">(click button below to pull this into the form above ... make sure it is a valid JSON object!)
+                            </textarea>
+                        </div>
+                        <div class="input=group mb-3">
+                            <button type="button" class="btn btn-success" onclick="pushInformaryDataToForm()">Push Data to Form</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <footer class="my-5 pt-5 text-muted text-center text-small">
+                <p class="mb-1">Informary Sample Page</p>
+            </footer>
+        </div>
+    </body>
+</html>

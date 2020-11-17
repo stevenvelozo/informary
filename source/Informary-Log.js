@@ -11,9 +11,8 @@
 
 class InformaryLog
 {
-	constructor(pDepencies, pSettings)
+	constructor(pSettings)
 	{
-		this._Dependencies = pDepencies;
 		this._Settings = pSettings;
 	}
 
@@ -59,7 +58,9 @@ class InformaryLog
 	logTime(pMessage)
 	{
 		let tmpMessage = (typeof(pMessage) !== 'undefined') ? pMessage : 'Time';
-		this.info(tmpMessage+': '+this._Dependencies.moment().format('MMMM Do YYYY, HH:mm:ss.SSS'))
+		let tmpDate = new Date();
+
+		this.info(tmpMessage+': '+tmpDate.toString())
 	}
 
 	// Get a timestamp 

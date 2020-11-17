@@ -10,18 +10,22 @@
 */
 class Informary
 {
-	constructor(pSettings, pScope)
+	constructor(pSettings)
 	{
 		this._Dependencies = {};
-		this._Dependencies.async = require('async');
-		this._Dependencies.moment = require('moment');
 		this._Dependencies.jquery = require('jquery');
-		this._Dependencies.underscore = require('underscore');
 
-		this._Settings = this._Dependencies.underscore.extend(JSON.parse(JSON.stringify(require('./Informary-Settings-Default.js'))), pSettings);
+		this._Settings = (typeof(pSettings) === 'object') ? pSettings : (
+			{
+				// The form we are dealing with (this is a hash set on the form itself)
+				Form: 'UNSET_FORM_ID',
+
+				// If this is true, show a whole lotta logs
+				DebugLog: false
+			});
 
 		// This has behaviors similar to bunyan, for consistency
-		this._Log = new (require('./Informary-Log.js'))(this._Dependencies, this._Settings);
+		this._Log = new (require('./Informary-Log.js'))(this._Settings);
 		this.log = this._Log;
 	}
 
@@ -45,9 +49,11 @@ class Informary
 			this.log.debug(`Informary Data->Form found parent address [${tmpParentPropertyAddress}] and is parsing properties`);
 		}
 
-		this._Dependencies.async.eachOfSeries(pRecordObject,
-			(pValue, pKey, fRecursiveCallback)=>
+		let tmpRecordObjectKeys = Object.keys(pRecordObject);
+		tmpRecordObjectKeys.forEach(
+			(pKey) =>
 			{
+				let tmpRecord = pRecordObject[pKey];
 				let tmpPropertyAddress = (tmpParentPropertyAddress.length > 0) ? `${pParentPropertyAddress}.${pKey}` : pKey;
 
 				if (this._Settings.DebugLog)
@@ -55,12 +61,11 @@ class Informary
 					this.log.debug(`Informary Data->Form parent address [${pParentPropertyAddress}] parsing property [${tmpPropertyAddress}]`);
 				}
 
-				switch (typeof(pValue))
+				switch (typeof(tmpRecord))
 				{
-					// TODO: Something special with Arrays?  Maybe.
-					// If it's an object, recurse.
+					// If it's an object, check if we should be marshaling the whole value in or recursing.
 					case 'object':
-						return this.marshalDataToForm(pValue, fRecursiveCallback, tmpPropertyAddress);
+						return this.marshalDataToForm(tmpRecord, fRecursiveCallback, tmpPropertyAddress);
 						break;
 					// Ignore undefined properties
 					case 'undefined':
@@ -76,36 +81,17 @@ class Informary
 						if (tmpFormElement.length > 0) {
 							// set the text area to the text content
 							if (this._Dependencies.jquery(tmpFormElement)[0].tagName === 'TEXTAREA') {
-								this._Dependencies.jquery(tmpFormElement)[0].textContent = pValue;
+								this._Dependencies.jquery(tmpFormElement)[0].textContent = tmpRecord;
 							// set the correct option to 'selected' for select tags
 							} else if (this._Dependencies.jquery(tmpFormElement)[0].tagName === 'SELECT') {
-								this._Dependencies.jquery(`select[data-i-form="${this._Settings.Form}"][data-i-datum="${tmpPropertyAddress}"] option[value="${pValue}"]`).prop('selected', true);
+								this._Dependencies.jquery(`select[data-i-form="${this._Settings.Form}"][data-i-datum="${tmpPropertyAddress}"] option[value="${tmpRecord}"]`).prop('selected', true);
 							// otherwise just set the value for input
 							} else {
-								this._Dependencies.jquery(tmpFormElement).val(pValue);
+								this._Dependencies.jquery(tmpFormElement).val(tmpRecord);
 							}
 						}	
-
-						return fRecursiveCallback();
 						break;
 				}
-				return fRecursiveCallback();
-			},
-			(pError)=>
-			{
-				if (this._Settings.DebugLog)
-				{
-					this.log.logTimeDelta(`Informary Data->Form parent address [${pParentPropertyAddress}] parsing complete`);
-					this.log.debug(`Informary Data->Form recursive parsing exit [${pParentPropertyAddress}]`);
-				}
-				if (pError)
-				{
-					this.log.error(pError);
-					return fCallback(pError);
-				}
-
-				// Recursive tail.
-				return fCallback();
 			});
 	}
 
@@ -123,7 +109,7 @@ class Informary
 			return fCallback('Invalid record object passed in!  Informary needs a Javascript object to put values into.');
 		}
 
-		let tmpFormValues = this._Dependencies.jquery(`
+		let tmpFormValueElements = this._Dependencies.jquery(`
 				input[data-i-form=${this._Settings.Form}],
 				select[data-i-form=${this._Settings.Form}],
 				textarea[data-i-form=${this._Settings.Form}]
@@ -175,16 +161,16 @@ class Informary
 			}
 		};
 
-		this._Dependencies.async.eachOfSeries(tmpFormValues,
-			(pValue, pKey, fRecursiveCallback)=>
+		this._Dependencies.jquery.each(tmpFormValueElements,
+			(pRecordIndex, pRecordAddress) =>
 			{
-				let tmpFormValueAddress = this._Dependencies.jquery(pValue).attr('data-i-datum');
+				let tmpFormValueAddress = this._Dependencies.jquery(pRecordAddress).attr('data-i-datum');
 				let tmpFormValue;
 				// check to see which element type this is before trying to collect the value
-				if (this._Dependencies.jquery(pValue).tagName === 'TEXTAREA') {
-					tmpFormValue = this._Dependencies.jquery(pValue).textContent;
+				if (this._Dependencies.jquery(pRecordAddress).tagName === 'TEXTAREA') {
+					tmpFormValue = this._Dependencies.jquery(pRecordAddress).textContent;
 				} else {
-					tmpFormValue = this._Dependencies.jquery(pValue).val();
+					tmpFormValue = this._Dependencies.jquery(pRecordAddress).val();
 				}
 				// If the value is non existant, set it to null
 				if (typeof(tmpFormValue) === 'undefined')
@@ -198,23 +184,9 @@ class Informary
 					tmpUnknownValueIndex++;
 				}
 				setValueAtAddress(pRecordObject, tmpFormValueAddress, tmpFormValue);
-				return fRecursiveCallback();
-			},
-			(pError)=>
-			{
-				if (this._Settings.DebugLog)
-				{
-					this.log.logTimeDelta(`Informary Form->Data parsing complete`);
-				}
-				if (pError)
-				{
-					this.log.error(pError);
-					return fCallback(pError);
-				}
-
-				// Recursive tail.
-				return fCallback();
 			});
+
+		return fCallback();
 	}
 };
 
