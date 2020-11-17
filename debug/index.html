@@ -4,7 +4,7 @@
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-        <meta name="description" content="">
+        <meta name="description" content="Informary Test Harness">
         <meta name="author" content="">
         <title>Sample Form</title>
         <link href="bootstrap/css/bootstrap.css" rel="stylesheet">
@@ -62,36 +62,17 @@
                     console.log('Message: '+pError);
                 }
             };
+
+            window.onload = function()
+            {
+                console.log('--> Informary test harness Window Onload triggered');
+                // Uncomment this line to automatically load the data below into the form after page load
+                pushInformaryDataToForm();
+                console.log('--> Informary test harness Window Onload completed');
+            }
 //]]>
         </script>
         <script src="bootstrap/js/bootstrap.min.js"></script>
-        <script type="text/javascript">
-//<![CDATA[
-// Create a default record to load, to test wkhtmltopdf rendering after informary data load
-var _SampleData = (
-{
-    "Header": {
-        "WorkDate": "2020-11-09",
-        "Inspector": "Billy Bob",
-        "Location": {
-            "Description": "SB I5 Milepost 678 near Redding",
-            "Station": "Station 10+1.054 RT"
-        },
-        "WorkCompleted": "on"
-    },
-    "Rows": {
-        "Row_1": {
-            "PersonnelName": "",
-            "Contractor": "",
-            "LineItem": "",
-            "Equipment": "",
-            "Hours": "",
-            "Description": ""
-        }
-    }
-})
-//]]>
-        </script>
     </head>
     <body class="bg-light">
         <div class="container">
@@ -172,7 +153,7 @@ var _SampleData = (
                             <textarea class="form-control" aria-label="Informary-Output" style="min-height:6rem;height:24rem;max-height:40rem;" id="informaryOutput">(click the button below to populate this)</textarea>
                         </div>
                         <div class="input=group">
-                            <button type="button" class="btn btn-primary" onclick="pullInformaryDataFromForm()">Pull Data from Form</button>
+                            <button type="button" class="btn btn-primary" onclick="pullInformaryDataFromForm()">Pull JSON Data from Form to Above</button>
                         </div>
 
                         <hr class="w-100 mb-5 mt-3" />
@@ -180,11 +161,32 @@ var _SampleData = (
                             <div class="input-group-prepend">
                                 <span class="input-group-text">Informary Input</span>
                             </div>
-                            <textarea class="form-control" aria-label="Informary-Input" style="min-height:6rem;height:24rem;max-height:40rem;" id="informaryInput">(click button below to pull this into the form above ... make sure it is a valid JSON object!)
+                            <textarea class="form-control" aria-label="Informary-Input" style="min-height:6rem;height:24rem;max-height:40rem;" id="informaryInput">
+{
+    "Header": {
+        "WorkDate": "2020-11-09",
+        "Inspector": "Billy Boffdfsafafdsob",
+        "Location": {
+            "Description": "SB I5 Milepost 678 near Redding",
+            "Station": "Station 10+1.054 RT"
+        },
+        "WorkCompleted": "on"
+    },
+    "Rows": {
+        "Row_1": {
+            "PersonnelName": "",
+            "Contractor": "",
+            "LineItem": "Destructo",
+            "Equipment": "Jimbo's tractor",
+            "Hours": "5",
+            "Description": "fjdsailfjadsil"
+        }
+    }
+}
                             </textarea>
                         </div>
                         <div class="input=group mb-3">
-                            <button type="button" class="btn btn-success" onclick="pushInformaryDataToForm()">Push Data to Form</button>
+                            <button type="button" class="btn btn-success" onclick="pushInformaryDataToForm()">Push Above JSON Data to Form</button>
                         </div>
                     </form>
                 </div>

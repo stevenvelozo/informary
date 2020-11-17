@@ -43,7 +43,8 @@ class Informary
 			return fCallback('Invalid record object passed in!');
 		}
 
-		let tmpParentPropertyAddress = (typeof(pParentPropertyAddress) === 'string') ? pParentPropertyAddress : false;
+		let tmpParentPropertyAddress = (typeof(pParentPropertyAddress) !== 'undefined') ? pParentPropertyAddress : false;
+		let tmpParentPropertyAddressString = (typeof(pParentPropertyAddress) !== 'undefined') ? pParentPropertyAddress : 'JSON OBJECT ROOT';
 		if (this._Settings.DebugLog)
 		{
 			this.log.debug(`Informary Data->Form found parent address [${tmpParentPropertyAddress}] and is parsing properties`);
@@ -58,18 +59,19 @@ class Informary
 
 				if (this._Settings.DebugLog)
 				{
-					this.log.debug(`Informary Data->Form parent address [${pParentPropertyAddress}] parsing property [${tmpPropertyAddress}]`);
+					this.log.debug(`Informary Data->Form parent address [${tmpParentPropertyAddressString}] parsing property [${tmpPropertyAddress}]`);
 				}
 
 				switch (typeof(tmpRecord))
 				{
 					// If it's an object, check if we should be marshaling the whole value in or recursing.
 					case 'object':
-						return this.marshalDataToForm(tmpRecord, fRecursiveCallback, tmpPropertyAddress);
+						// We've switched this to synchronous for safe browser mode
+						// Leaving an empty callback in there in case we decide to switch back.
+						return this.marshalDataToForm(tmpRecord, ()=>{}, tmpPropertyAddress);
 						break;
 					// Ignore undefined properties
 					case 'undefined':
-						return fRecursiveCallback();
 						break;
 					// Otherwise marshal it into the form
 					default:
