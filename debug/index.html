@@ -28,12 +28,12 @@
                         if (pError)
                         {
                             // The form marshalling had some kind of error!
-                            console.log('INFORMARY MARSHAL FROM FORMERROR: '+pError);
+                            console.log('INFORMARY MARSHAL FROM FORM ERROR: '+pError);
                             console.log(JSON.stringify(tmpDataObject,null,4));
                         }
 
                         $('#informaryOutput').val(JSON.stringify(tmpDataObject,null,4));
-                    })
+                    });
             };
 
             // Simple function to push data from debug text area to form
@@ -63,11 +63,39 @@
                 }
             };
 
+            
+            // Setup a global location for the form state to live
+            window.informaryState = {};
+            var storeInformaryState = function(fCallback)
+            {
+                var tmpCallback = (typeof(fCallback) === 'function') ? fCallback : function() {};
+                libInformary.marshalFormToData(window.informaryState,
+                    (pError) =>
+                    {
+                        if (pError)
+                        {
+                            // The form marshalling had some kind of error!
+                            this.log.error('INFORMARY MARSHAL FROM FORM ERROR: '+pError);
+                        }
+                        tmpCallback(pError, window.informaryState);
+                    });
+            };
+            var getInformaryDatum = function(pAddress, fCallback)
+            {
+                storeInformaryState(function(pError, pInformaryState)
+                    {
+                        console.log('Informary state at address ['+pAddress+']: '+libInformary.getValueAtAddress(pInformaryState, pAddress));
+                    });
+            };
+
+
             window.onload = function()
             {
                 console.log('--> Informary test harness Window Onload triggered');
                 // Uncomment this line to automatically load the data below into the form after page load
                 pushInformaryDataToForm();
+                // Now spool up the global informary state object
+                storeInformaryState();
                 console.log('--> Informary test harness Window Onload completed');
             }
 //]]>
@@ -165,7 +193,7 @@
 {
     "Header": {
         "WorkDate": "2020-11-09",
-        "Inspector": "Billy Boffdfsafafdsob",
+        "Inspector": "James Smith",
         "Location": {
             "Description": "SB I5 Milepost 678 near Redding",
             "Station": "Station 10+1.054 RT"
@@ -174,12 +202,12 @@
     },
     "Rows": {
         "Row_1": {
-            "PersonnelName": "",
-            "Contractor": "",
-            "LineItem": "Destructo",
-            "Equipment": "Jimbo's tractor",
+            "PersonnelName": "Sally Suthers",
+            "Contractor": "ABC Demolition",
+            "LineItem": "1001 - Clearing and Grubbing",
+            "Equipment": "Ford F350 Pickup",
             "Hours": "5",
-            "Description": "fjdsailfjadsil"
+            "Description": "Removing bulk landscape material"
         }
     }
 }
