@@ -84,7 +84,8 @@
             {
                 storeInformaryState(function(pError, pInformaryState)
                     {
-                        console.log('Informary state at address ['+pAddress+']: '+libInformary.getValueAtAddress(pInformaryState, pAddress));
+                        console.log('Informary state at address ['+pAddress+']: ');
+                        console.log(JSON.stringify(libInformary.getValueAtAddress(pInformaryState, pAddress),null,4));
                     });
             };
 
