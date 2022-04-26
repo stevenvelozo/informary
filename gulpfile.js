@@ -6,6 +6,7 @@ const libGulp = require('gulp');
 const libVinylSourceStream = require('vinyl-source-stream');
 const libVinylBuffer = require('vinyl-buffer');
 
+const libTerser = require('gulp-terser');
 const libBuble = require('gulp-buble');
 const libSourcemaps = require('gulp-sourcemaps');
 const libGulpUtil = require('gulp-util');

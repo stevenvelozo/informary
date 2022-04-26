@@ -20,7 +20,7 @@ class InformaryLog
 	{
 		let tmpFormName = this._Settings.Form ? this._Settings.Form : 'Unspecified_Form';
 		// Write the message
-		console.log('['+pLevel+'] ('+this._Settings.Form+') '+pMessage);
+		console.log('['+pLevel+'] ('+tmpFormName+') '+pMessage);
 
 		// Write out the object if it is passed in
 		if (typeof(pObject) !== 'undefined')
