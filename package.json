@@ -7,6 +7,7 @@
     "start": "node source/Informary.js",
     "coverage": "./node_modules/istanbul/lib/cli.js cover ./node_modules/mocha/bin/_mocha -- -u tdd -R spec",
     "test": "./node_modules/mocha/bin/_mocha -u tdd -R spec",
+    "build": "./node_modules/.bin/gulp build",
     "docker-dev-build-image": "docker build ./ -t retold/informary:local",
     "docker-dev-run": "docker run -it -d --name informary-dev -p 12349:8080 -p 5500:5500 -v \"$PWD/.config:/home/coder/.config\"  -v \"$PWD:/home/coder/informary\" -u \"$(id -u):$(id -g)\" -e \"DOCKER_USER=$USER\" retold/informary:local"
   },
@@ -41,11 +42,13 @@
   "devDependencies": {
     "@babel/core": "^7.4.4",
     "@babel/preset-env": "^7.4.4",
+    "@testing-library/dom": "^8.13.0",
     "async": "^2.6.2",
     "browserify": "^16.2.3",
     "chai": "4.2.0",
     "gulp": "^4.0.2",
     "gulp-babel": "^8.0.0",
+    "gulp-buble": "^0.9.0",
     "gulp-sourcemaps": "^2.6.5",
     "gulp-terser": "^1.1.7",
     "gulp-util": "^3.0.8",
@@ -55,7 +58,8 @@
     "vinyl-source-stream": "^2.0.0"
   },
   "dependencies": {
-    "gulp-buble": "^0.9.0",
-    "jquery": "^3.6.0"
+    "cachetrax": "^1.0.0",
+    "jquery": "^3.6.0",
+    "jsdom": "^19.0.0"
   }
 }

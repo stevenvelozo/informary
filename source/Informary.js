@@ -3,6 +3,8 @@
 * @author <steven@velozo.com>
 */
 
+let libCacheTraxx = require('cachetrax');
+
 /**
 * Informary browser sync library
 *
@@ -10,10 +12,10 @@
 */
 class Informary
 {
-	constructor(pSettings)
+	constructor(pSettings, pContext)
 	{
 		this._Dependencies = {};
-		this._Dependencies.jquery = require('jquery');
+		this._Dependencies.jqueryLibrary = require('jquery');
 
 		this._Settings = (typeof(pSettings) === 'object') ? pSettings : (
 			{
@@ -24,9 +26,42 @@ class Informary
 				DebugLog: false
 			});
 
+		if (this._Settings.__VirtualDOM)
+		{
+			// If a virtual dom was passed in for unit tests, use that.
+			this._Dependencies.jquery = this._Dependencies.jqueryLibrary(this._Settings.__VirtualDOM);
+		}
+		else
+		{
+			this._Dependencies.jquery = this._Dependencies.jqueryLibrary;
+		}
+		
+		if (!this._Settings.Form)
+		{
+			this._Settings.Form = 'Unset_Form_Context';
+		}
+
 		// This has behaviors similar to bunyan, for consistency
 		this._Log = new (require('./Informary-Log.js'))(this._Settings);
 		this.log = this._Log;
+
+		// This is lazily set so unit tests can set an external provider for harnesses
+		this._LocalStorage = null;
+
+		this._InitialDocumentState = false;
+
+		this._UndoBuffer = new libCacheTraxx()
+
+		this._CurrentDocumentState = false;
+
+		// If no context is passed in, use `Context_0`
+		// This could cause undo/redo leakage.
+		this._Context = pContext ? pContext.toString() : 'Context_0';
+	}
+
+	setStorageProvider (pStorageProvider)
+	{
+		this._LocalStorage = pStorageProvider;
 	}
 
 	getValueAtAddress (pObject, pAddress)
@@ -178,6 +213,8 @@ class Informary
 						break;
 				}
 			});
+		
+		return fCallback();
 	}
 
 	marshalFormToData (pRecordObject, fCallback)

@@ -6,9 +6,20 @@
 * @author      Steven Velozo <steven@velozo.com>
 */
 
+const { expect } = require("chai");
 var Chai = require("chai");
 var Expect = Chai.expect;
-var Assert = Chai.assert;
+
+const libFS = require("fs");
+
+// Basic harness form HTML
+let tmpHarnessHTML = libFS.readFileSync(`${__dirname}/harness/informary_html_test_harness.html`)
+
+const libJquery = require("jquery");
+
+const libJSDOM = require("jsdom");
+const { JSDOM } = libJSDOM;
+
 var libInformary = require('../source/Informary.js');
 
 
@@ -117,5 +128,87 @@ suite
 				);
 			}
 		);
+		suite(
+			'Basic Marshalling',
+			()=>
+			{
+				test
+				(
+					'Marshalling data from the form...',
+					(fDone)=>
+					{
+						var tmpDOM = new JSDOM(tmpHarnessHTML);
+						var tmpInformary = new libInformary({Form:"SampleForm", __VirtualDOM:tmpDOM.window, DebugLog:true}, 'Context-1');
+
+						var tmpDataObject = {};
+						tmpInformary.marshalFormToData(tmpDataObject,
+							function(pError)
+							{
+								if (pError)
+								{
+									// The form marshalling had some kind of error!
+									console.log('INFORMARY MARSHAL FROM FORM ERROR: '+pError);
+									console.log(JSON.stringify(tmpDataObject,null,4));
+								}
+
+								expect(tmpDataObject.Header.WorkDate).to.equal('2010-05-19');
+
+								fDone();
+							});
+					}
+				);
+				test
+				(
+					'Marshalling data to the form...',
+					(fDone)=>
+					{
+						var tmpDOM = new JSDOM(tmpHarnessHTML);
+						var tmpInformary = new libInformary({Form:"SampleForm", __VirtualDOM:tmpDOM.window, DebugLog:true}, 'Context-1');
+	
+						var tmpDataObject = {
+							"Header": {
+								"WorkDate": "2020-11-09",
+								"Inspector": "James Smith",
+								"Location": {
+									"Description": "SB I5 Milepost 678 near Redding",
+									"Station": "Station 10+1.054 RT"
+								},
+								"WorkCompleted": "on"
+							},
+							"Rows": {
+								"Row_1": {
+									"PersonnelName": "Sally Suthers",
+									"Contractor": "ABC Demolition",
+									"LineItem": "1001 - Clearing and Grubbing",
+									"Equipment": "Ford F450 Pickup",
+									"Hours": "5",
+									"Description": "Removing bulk landscape material"
+								}
+							}
+						};
+						tmpInformary.marshalDataToForm(tmpDataObject,
+							function(pError)
+							{
+								if (pError)
+								{
+									// The form marshalling had some kind of error!
+									console.log('INFORMARY MARSHAL TO FORM ERROR: '+pError);
+									console.log(JSON.stringify(tmpDataObject,null,4));
+								}
+
+								console.log(JSON.stringify(tmpDataObject,null,4));
+
+								var tmpJquery = libJquery(tmpDOM.window);
+
+								console.log(JSON.stringify(tmpDataObject,null,4));
+								expect(tmpJquery('#workDate').val()).to.equal('2020-11-09');
+								expect(tmpJquery('#row_equipment_1').val()).to.equal('Ford F450 Pickup');
+
+								fDone();
+							});
+					}
+				);
+			}
+		)
 	}
 );

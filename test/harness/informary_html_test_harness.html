@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="Informary Test Harness">
+        <meta name="author" content="">
+        <title>Sample Form</title>`
+    </head>
+    <body class="bg-light">
+        <div class="container">
+            <div class="row mt-5">
+                <div class="col-md-12 mt-3"><h1>Informary HTML Test Harness</div>
+                <div class="col-md-12" style="background-color:#ffffee;border-radius:10px;border:2px solid #353535;">
+                    <h4 class="mb-3 mt-3">Sample Form</h4>
+                    <form novalidate>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="workDate">Work Date</label>
+                                <input type="text" class="form-control" id="workDate" placeholder="e.g. 2010-05-19" value="2010-05-19" data-i-form="SampleForm" data-i-datum="Header.WorkDate">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="inspector">Inspector</label>
+                                <input type="text" class="form-control" id="inspector" placeholder="inspector name" value="" data-i-form="SampleForm" data-i-datum="Header.Inspector">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="location">Location</label>
+                            <input type="text" class="form-control" id="location" placeholder="I5 Milepost 214" data-i-form="SampleForm" data-i-datum="Header.Location.Description">
+                        </div>
+                        <div class="mb-3">
+                            <label for="location-extended">Station</label>
+                            <input type="text" class="form-control" id="location-extended" placeholder="Station 114+48 Lt" data-i-form="SampleForm" data-i-datum="Header.Location.Station">
+                        </div>
+                        <div class="custom-control custom-checkbox">
+                            <input type="checkbox" class="custom-control-input" id="work-completed" data-i-form="SampleForm" data-i-datum="Header.WorkCompleted">
+                            <label class="custom-control-label" for="work-completed">Work has been completed today</label>
+                        </div>
+                        <table class="table mt-3">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Personnel Name</th>
+                                    <th scope="col">Contractor</th>
+                                    <th scope="col">Line Item</th>
+                                    <th scope="col">Equipment</th>
+                                    <th scope="col">Hours</th>
+                                    <th scope="col">Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <input type="text" class="form-control" id="row_personnel_1" placeholder="name" data-i-form="SampleForm" data-i-datum="Rows.Row_1.PersonnelName">
+                                    </td>
+                                    <td>
+                                        <input type="text" class="form-control" id="row_contractor_1" placeholder="contractor" data-i-form="SampleForm" data-i-datum="Rows.Row_1.Contractor">
+                                    </td>
+                                    <td>
+                                        <input type="text" class="form-control" id="row_lineitem_1" placeholder="item" data-i-form="SampleForm" data-i-datum="Rows.Row_1.LineItem">
+                                    </td>
+                                    <td>
+                                        <input type="text" class="form-control" id="row_equipment_1" placeholder="equipment" data-i-form="SampleForm" data-i-datum="Rows.Row_1.Equipment">
+                                    </td>
+                                    <td>
+                                        <input type="text" class="form-control" id="row_hours_1" placeholder="hours" data-i-form="SampleForm" data-i-datum="Rows.Row_1.Hours">
+                                    </td>
+                                    <td>
+                                        <input type="text" class="form-control" id="row_description_1" placeholder="" data-i-form="SampleForm" data-i-datum="Rows.Row_1.Description">
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
