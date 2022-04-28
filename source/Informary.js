@@ -60,7 +60,7 @@ class Informary
 		// This is lazily set so unit tests can set an external provider for harnesses
 		this._LocalStorage = null;
 
-
+		this._UndoKeys = [];
 		this._UndoBuffer = new libCacheTraxx();
 		// Default to 10 undo levels if it isn't passed in via settings
 		this._UndoBuffer.maxLength = this._Settings.UndoLevels ? this._Settings.UndoLevels : 25;
@@ -110,7 +110,21 @@ class Informary
 	{
 		this.checkStorageProvider();
 
-		let tmpIndex = this._LocalStorage.getItem(this.getIndexKey(pValueType));
+		let tmpIndex = false;
+
+		let tmpData = this._LocalStorage.getItem(this.getIndexKey(pValueType));
+
+		if (tmpData)
+		{
+			try
+			{
+				tmpIndex = JSON.parse(tmpData);
+			}
+			catch(pError)
+			{
+				this.log.error(`Error parsing local storage index key [${this.getIndexKey(pValueType)}]`);
+			}
+		}
 
 		if (!tmpIndex)
 		{
@@ -147,7 +161,7 @@ class Informary
 		tmpIndex[tmpKey] = {Time: Date.now(), ValueType: pValueType, User: this._Settings.User, Context: this._Context, ContextGUID: this._ContextGUID};
 
 		// This relies on the readIndex above to initialize the localstorage provider
-		this._LocalStorage.setItem(this.getIndexKey(pValueType), tmpIndex);
+		this._LocalStorage.setItem(this.getIndexKey(pValueType), JSON.stringify(tmpIndex));
 	}
 
 	readData(pValueType)
@@ -159,7 +173,15 @@ class Informary
 
 		if (tmpData)
 		{
-			tmpData = JSON.parse(tmpData);
+			try
+			{
+				tmpData = JSON.parse(tmpData);
+			}
+			catch(pError)
+			{
+				this.log.error(`Error parsing local storage key [${this.getStorageKey(pValueType)}]`);
+				tmpData = false;
+			}
 		}
 		else
 		{
@@ -274,9 +296,37 @@ class Informary
 	}
 
 	// Write out recovery data
-	storeRecoveryData()
+	storeRecoveryData(fCallback)
 	{
-		return this.writeData('Recovery', this.marshalFormToData());
+		let tmpCallback = (typeof(fCallback) == 'function') ? fCallback : ()=>{};
+		
+		let tmpRecoveryData = {};
+		this.marshalFormToData(tmpRecoveryData, 
+			()=>
+			{
+				this._RecoveryDocumentState = tmpRecoveryData;
+				return this.writeData('Recovery', this._RecoveryDocumentState);
+			});
+	}
+
+	snapshotData()
+	{
+		let tmpNewUndoKey = Date.now().toString();
+		this._UndoKeys.push(tmpNewUndoKey);
+		this.storeRecoveryData(()=>{this._UndoBuffer.put(tmpNewUndoKey, this._RecoveryDocumentState)});
+	}
+
+	revertToLastSnapshot()
+	{
+		let tmpSnapshotKey = this._UndoKeys.pop();
+		let tmpSnapshotData = this._UndoBuffer.read(tmpSnapshotKey);
+
+		if (tmpSnapshotData)
+		{
+			// Remove the expired snapshot of data
+			this._UndoBuffer.expire(tmpSnapshotKey);
+			this.marshalDataToForm(tmpSnapshotData);
+		}
 	}
 
 	readRecoveryData()
@@ -335,7 +385,7 @@ class Informary
 		{
 			tmpRecoveryState = this.checkRecoveryState(pRecordObject);
 			// Set the "Loaded document" state -- what the server thinks the record is.
-			this.storeSourceData(pRecordObject);
+			//this.storeSourceData(pRecordObject);
 		}
 
 		if (this._Settings.DebugLog)
