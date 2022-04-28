@@ -1,6 +1,6 @@
 {
   "name": "informary",
-  "version": "2.0.5",
+  "version": "2.0.6",
   "description": "Informary form data marshaling library.",
   "main": "source/Informary.js",
   "scripts": {
