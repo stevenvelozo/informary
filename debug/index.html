@@ -88,6 +88,26 @@
                     });
             };
 
+            var undoInformaryDataChanges = function()
+            {
+                libInformary.revertToLastSnapshot();
+            }
+
+            var snapshotInformaryData = function()
+            {
+                libInformary.snapshotData();
+            }
+
+            var checkInformaryState = function()
+            {
+                let tmpDataObject = libInformary.checkRecoveryState({});
+                $('#informaryCheckState').val(JSON.stringify(tmpDataObject,null,4));
+            }
+
+            var restoreInformaryCheckpoint = function()
+            {
+                libInformary.restoreRecoveryScenarioData();
+            }
 
             window.onload = function()
             {
@@ -169,6 +189,21 @@
                 </div>
             </div>
 
+
+            <!-- This below is to aid in interactive testing of informary functionality -->
+            <div class="row mt-5 d-print-none">
+                <div class="col-md-12"  style="background-color:#eeffee;border-radius:10px;border:2px solid #353535;">
+                    <h4 class="mb-3 mt-3">Undo and Recovery</h4>
+                    <form novalidate>
+                        <div class="input=group mb-3">
+                            <button type="button" class="btn btn-primary" onclick="undoInformaryDataChanges()">Undo</button>
+                            <button type="button" class="btn btn-primary" onclick="snapshotInformaryData()">Snapshot</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+
             <!-- This below is to aid in interactive testing of informary functionality -->
             <div class="row mt-5 d-print-none">
                 <div class="col-md-12"  style="background-color:#eeffee;border-radius:10px;border:2px solid #353535;">
@@ -219,6 +254,40 @@
                     </form>
                 </div>
             </div>
+
+           <!-- This below is to aid in interactive testing of informary functionality -->
+           <div class="row mt-5 d-print-none">
+            <div class="col-md-12"  style="background-color:#eeffee;border-radius:10px;border:2px solid #353535;">
+                <h4 class="mb-3 mt-3">Informary Data Testing</h4>
+                <form novalidate>
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">Informary Output</span>
+                        </div>
+                        <textarea class="form-control" aria-label="Informary-Output" style="min-height:6rem;height:24rem;max-height:40rem;" id="informaryOutput">(click the button below to populate this)</textarea>
+                    </div>
+                    <div class="input=group">
+                        <button type="button" class="btn btn-primary" onclick="pullInformaryDataFromForm()">Pull JSON Data from Form to Above</button>
+                    </div>
+
+                    <hr class="w-100 mb-5 mt-3" />
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">Informary Checkpoint State</span>
+                        </div>
+                        <textarea class="form-control" aria-label="Informary-CheckState" style="min-height:6rem;height:24rem;max-height:40rem;" id="informaryCheckState">
+                        </textarea>
+                    </div>
+                    <div class="input=group mb-3">
+                        <button type="button" class="btn btn-success" onclick="checkInformaryState()">Check Informary State</button>
+                    </div>
+                    <div class="input=group mb-3">
+                        <button type="button" class="btn btn-success" onclick="restoreInformaryCheckpoint()">Restore Checkpoint State</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
             <footer class="my-5 pt-5 text-muted text-center text-small">
                 <p class="mb-1">Informary Sample Page</p>
             </footer>

@@ -202,6 +202,18 @@ class Informary
 		// set the actual item
 		this._LocalStorage.setItem(this.getStorageKey(pValueType), JSON.stringify(pData));
 	}
+
+	deleteData(pValueType)
+	{
+		// Check that the storage provider is initialized
+		this.checkStorageProvider();
+
+		// Touch the index with a timestamp for the value.  Should we tell it it's a delete operation?  Hmmm..
+		this.touchIndex(pValueType);
+
+		// set the actual item
+		this._LocalStorage.removeItem(this.getStorageKey(pValueType));
+	}
 	/*
 	 * End of Storage Provider section
 	 ******************************************************/
@@ -305,7 +317,7 @@ class Informary
 			()=>
 			{
 				this._RecoveryDocumentState = tmpRecoveryData;
-				return this.writeData('Recovery', this._RecoveryDocumentState);
+				return tmpCallback(this.writeData('Recovery', this._RecoveryDocumentState));
 			});
 	}
 
@@ -313,7 +325,11 @@ class Informary
 	{
 		let tmpNewUndoKey = Date.now().toString();
 		this._UndoKeys.push(tmpNewUndoKey);
-		this.storeRecoveryData(()=>{this._UndoBuffer.put(tmpNewUndoKey, this._RecoveryDocumentState)});
+		this.storeRecoveryData(
+			()=>
+			{
+				this._UndoBuffer.put(this._RecoveryDocumentState, tmpNewUndoKey);
+			});
 	}
 
 	revertToLastSnapshot()
@@ -325,13 +341,53 @@ class Informary
 		{
 			// Remove the expired snapshot of data
 			this._UndoBuffer.expire(tmpSnapshotKey);
-			this.marshalDataToForm(tmpSnapshotData);
+			this.marshalDataToForm(tmpSnapshotData,
+				()=>
+				{
+					this.log.info(`Informary reverted to snapshot ID ${tmpSnapshotKey}`);
+				});
 		}
+	}
+
+	clearRecoveryData()
+	{
+		return this.deleteData('Recovery');
 	}
 
 	readRecoveryData()
 	{
 		return this.readData('Recovery');
+	}
+
+	restoreRecoveryScenarioData()
+	{
+		let tmpRecoveryScenarioData = this.readRecoveryScenario();
+
+		if (tmpRecoveryScenarioData && tmpRecoveryScenarioData.ExistingRecovery)
+		{
+			this.marshalDataToForm(tmpRecoveryScenarioData.ExistingRecovery,
+				()=>
+				{
+					this.clearRecoveryScenarioData();
+					// Store a new recovery data
+					this.storeRecoveryData();
+				});
+		}
+	}
+
+	clearRecoveryScenarioData()
+	{
+		return this.deleteData('RecoveryScenario');
+	}
+
+	storeRecoveryScenarioData(pRecoveryScenarioData)
+	{
+		return this.writeData('RecoveryScenario', pRecoveryScenarioData);
+	}
+
+	readRecoveryScenario()
+	{
+		return this.readData('RecoveryScenario');
 	}
 
 	// Checks if there is a recovery record, and detailed data about what it might be
@@ -354,7 +410,7 @@ class Informary
 			// Now check the differences
 			let tmpRecoveryDifferences = libObjectDiff.detailedDiff(tmpRecoveryData.ExistingSource, tmpRecoveryData.ExistingRecovery);
 
-			if (JSON.stringify(tmpRecoveryDifferences) == '{}')
+			if (JSON.stringify(tmpRecoveryDifferences) == JSON.stringify(libObjectDiff.detailedDiff({},{})))
 			{
 				// No differences -- we're good for now
 				return false;
@@ -372,6 +428,9 @@ class Informary
 				tmpRecoveryData.Index = {};
 				tmpRecoveryData.Index.ExistingSource = this.readIndexValue('Source');
 				tmpRecoveryData.Index.ExistingRecovery = this.readIndexValue('Recovery');
+
+				this.writeData('RecoveryScenario', tmpRecoveryData);
+
 				return tmpRecoveryData;
 			}
 		}
@@ -383,7 +442,7 @@ class Informary
 		let tmpRecoveryState = false;
 		if (!pParentPropertyAddress)
 		{
-			tmpRecoveryState = this.checkRecoveryState(pRecordObject);
+			//tmpRecoveryState = this.checkRecoveryState(pRecordObject);
 			// Set the "Loaded document" state -- what the server thinks the record is.
 			//this.storeSourceData(pRecordObject);
 		}
