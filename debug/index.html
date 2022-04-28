@@ -98,6 +98,11 @@
                 libInformary.snapshotData();
             }
 
+            var storeInformarySourceData = function()
+            {
+                libInformary.storeSourceData(pRecordObject);
+            }
+
             var checkInformaryState = function()
             {
                 let tmpDataObject = libInformary.checkRecoveryState({});
@@ -260,16 +265,6 @@
             <div class="col-md-12"  style="background-color:#eeffee;border-radius:10px;border:2px solid #353535;">
                 <h4 class="mb-3 mt-3">Informary Data Testing</h4>
                 <form novalidate>
-                    <div class="input-group">
-                        <div class="input-group-prepend">
-                            <span class="input-group-text">Informary Output</span>
-                        </div>
-                        <textarea class="form-control" aria-label="Informary-Output" style="min-height:6rem;height:24rem;max-height:40rem;" id="informaryOutput">(click the button below to populate this)</textarea>
-                    </div>
-                    <div class="input=group">
-                        <button type="button" class="btn btn-primary" onclick="pullInformaryDataFromForm()">Pull JSON Data from Form to Above</button>
-                    </div>
-
                     <hr class="w-100 mb-5 mt-3" />
                     <div class="input-group">
                         <div class="input-group-prepend">
@@ -279,9 +274,8 @@
                         </textarea>
                     </div>
                     <div class="input=group mb-3">
+                        <button type="button" class="btn btn-success" onclick="storeInformarySourceData()">Store Source Data</button>
                         <button type="button" class="btn btn-success" onclick="checkInformaryState()">Check Informary State</button>
-                    </div>
-                    <div class="input=group mb-3">
                         <button type="button" class="btn btn-success" onclick="restoreInformaryCheckpoint()">Restore Checkpoint State</button>
                     </div>
                 </form>
