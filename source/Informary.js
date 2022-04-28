@@ -3,6 +3,7 @@
 * @author <steven@velozo.com>
 */
 
+let libObjectDiff = require('deep-object-diff');
 let libCacheTraxx = require('cachetrax');
 
 /**
@@ -12,7 +13,7 @@ let libCacheTraxx = require('cachetrax');
 */
 class Informary
 {
-	constructor(pSettings, pContext)
+	constructor(pSettings, pContext, pContextGUID)
 	{
 		this._Dependencies = {};
 		this._Dependencies.jqueryLibrary = require('jquery');
@@ -20,7 +21,12 @@ class Informary
 		this._Settings = (typeof(pSettings) === 'object') ? pSettings : (
 			{
 				// The form we are dealing with (this is a hash set on the form itself)
-				Form: 'UNSET_FORM_ID',
+				Form: 'UNSET_HTML_FORM_ID',
+
+				IDUser: 0,
+
+				// The number of undo levels available
+				UndoLevels: 25,
 
 				// If this is true, show a whole lotta logs
 				DebugLog: false
@@ -35,10 +41,16 @@ class Informary
 		{
 			this._Dependencies.jquery = this._Dependencies.jqueryLibrary;
 		}
+
+		if (!this._Settings.User)
+		{
+			// If no user was passed in, set a default of 0
+			this._Settings.User = 0;
+		}
 		
 		if (!this._Settings.Form)
 		{
-			this._Settings.Form = 'Unset_Form_Context';
+			this._Settings.Form = 'UNSET_HTML_FORM_ID';
 		}
 
 		// This has behaviors similar to bunyan, for consistency
@@ -48,21 +60,129 @@ class Informary
 		// This is lazily set so unit tests can set an external provider for harnesses
 		this._LocalStorage = null;
 
-		this._InitialDocumentState = false;
 
-		this._UndoBuffer = new libCacheTraxx()
+		this._UndoBuffer = new libCacheTraxx();
+		// Default to 10 undo levels if it isn't passed in via settings
+		this._UndoBuffer.maxLength = this._Settings.UndoLevels ? this._Settings.UndoLevels : 25;
 
+		// The initially loaded document state (filled out when pushed to form)
+		this._SourceDocumentState = false;
+		// The latest current document state
 		this._CurrentDocumentState = false;
 
 		// If no context is passed in, use `Context_0`
 		// This could cause undo/redo leakage.
-		this._Context = pContext ? pContext.toString() : 'Context_0';
+		this._Context = pContext ? pContext.toString() : 'InformaryDefaultContext';
+		this._ContextGUID = pContextGUID ? pContextGUID.toString() : '0x000000001';
 	}
 
+	/******************************************************
+	 * Storage Provider
+	 * --
+	 * This could be abstracted to another class
+	 */
 	setStorageProvider (pStorageProvider)
 	{
 		this._LocalStorage = pStorageProvider;
 	}
+
+	checkStorageProvider()
+	{
+		// When running in a browser, this likely won't be set.  If it isn't, 
+		if (!this._LocalStorage)
+		{
+			this._LocalStorage = window.localStorage;
+		}
+	}
+
+	getIndexKey(pValueType)
+	{
+		return `Informary_Index_User[${this._Settings.User.toString()}]_ValueType[${pValueType}]`;
+	}
+
+	getStorageKey(pValueType)
+	{
+		return `Informary_Data_User[${this._Settings.User.toString()}]_ValueType[${pValueType}]_Context[${this._Context}]_ContextGUID[${this._ContextGUID}]`;
+	}
+
+	// Read the whole index
+	readIndex(pValueType)
+	{
+		this.checkStorageProvider();
+
+		let tmpIndex = this._LocalStorage.getItem(this.getIndexKey(pValueType));
+
+		if (!tmpIndex)
+		{
+			tmpIndex =
+			{
+				IndexCreateTime: Date.now(),
+				IndexUser: this._Settings.User
+			}
+		}
+
+		tmpIndex.IndexLastReadTime = Date.now();
+
+		return tmpIndex;
+	}
+
+	// Read just the record key for the index
+	readIndexValue(pValueType)
+	{
+		let tmpIndex = this.readIndex(pValueType);
+		let tmpIndexKeyValue = tmpIndex[this.getStorageKey(pValueType)];
+
+		// Rather than return undefined, return false if it's a miss
+		return (tmpIndexKeyValue) ? tmpIndexKeyValue : false;
+	}
+
+	// Touch the index for a value type
+	touchIndex(pValueType)
+	{
+		this.checkStorageProvider();
+
+		let tmpIndex = this.readIndex(pValueType);
+		let tmpKey = this.getStorageKey(pValueType);
+
+		tmpIndex[tmpKey] = {Time: Date.now(), ValueType: pValueType, User: this._Settings.User, Context: this._Context, ContextGUID: this._ContextGUID};
+
+		// This relies on the readIndex above to initialize the localstorage provider
+		this._LocalStorage.setItem(this.getIndexKey(pValueType), tmpIndex);
+	}
+
+	readData(pValueType)
+	{
+		// Check that the storage provider is initialized
+		this.checkStorageProvider();
+
+		let tmpData = this._LocalStorage.getItem(this.getStorageKey(pValueType));
+
+		if (tmpData)
+		{
+			tmpData = JSON.parse(tmpData);
+		}
+		else
+		{
+			tmpData = false;
+		}
+
+		return tmpData;
+	}
+
+	writeData(pValueType, pData)
+	{
+		// Check that the storage provider is initialized
+		this.checkStorageProvider();
+
+		// Touch the index with a timestamp for the value
+		this.touchIndex(pValueType);
+
+		// set the actual item
+		this._LocalStorage.setItem(this.getStorageKey(pValueType), JSON.stringify(pData));
+	}
+	/*
+	 * End of Storage Provider section
+	 ******************************************************/
 
 	getValueAtAddress (pObject, pAddress)
 	{
@@ -147,9 +267,77 @@ class Informary
 		}
 	}
 
+	// Write out source data
+	storeSourceData(pData)
+	{
+		return this.writeData('Source', pData);
+	}
+
+	// Write out recovery data
+	storeRecoveryData()
+	{
+		return this.writeData('Recovery', this.marshalFormToData());
+	}
+
+	readRecoveryData()
+	{
+		return this.readData('Recovery');
+	}
+
+	// Checks if there is a recovery record, and detailed data about what it might be
+	checkRecoveryState(pSourceData)
+	{
+		let tmpRecoveryData = (
+			{
+				NewSource: pSourceData,
+				ExistingSource: this.readData('Source'),
+				ExistingRecovery: this.readData('Recovery')
+			});
+
+		if (!tmpRecoveryData.ExistingSource || !tmpRecoveryData.ExistingRecovery)
+		{
+			// There is either no source or no read data, so we are not in a recovery state
+			return false;
+		}
+		else
+		{
+			// Now check the differences
+			let tmpRecoveryDifferences = libObjectDiff.detailedDiff(tmpRecoveryData.ExistingSource, tmpRecoveryData.ExistingRecovery);
+
+			if (JSON.stringify(tmpRecoveryDifferences) == '{}')
+			{
+				// No differences -- we're good for now
+				return false;
+			}
+			else
+			{
+				this._Log.info(`Informary found recovery data at ${this.getStorageKey('Recovery')}!`);
+				// Put the recovery changes in the object for helpfulness
+				tmpRecoveryData.Diffs = {};
+				tmpRecoveryData.Diffs.ExistingRecovery_ExistingSource = tmpRecoveryDifferences;
+				tmpRecoveryData.Diffs.ExistingSource_NewSource = libObjectDiff.detailedDiff(tmpRecoveryData.ExistingSource, tmpRecoveryData.NewSource);
+				tmpRecoveryData.Diffs.ExistingRecovery_NewSource = libObjectDiff.detailedDiff(tmpRecoveryData.ExistingRecovery, tmpRecoveryData.NewSource);
+				
+				// Put the index data in the object for helpfulness
+				tmpRecoveryData.Index = {};
+				tmpRecoveryData.Index.ExistingSource = this.readIndexValue('Source');
+				tmpRecoveryData.Index.ExistingRecovery = this.readIndexValue('Recovery');
+				return tmpRecoveryData;
+			}
+		}
+	}
+
 	marshalDataToForm (pRecordObject, fCallback, pParentPropertyAddress)
 	{
-		let tmpOperationTime = this.log.getTimeStamp();
+		// Because this is recursive, we only want to call this on the outermost call of the stack.
+		let tmpRecoveryState = false;
+		if (!pParentPropertyAddress)
+		{
+			tmpRecoveryState = this.checkRecoveryState(pRecordObject);
+			// Set the "Loaded document" state -- what the server thinks the record is.
+			this.storeSourceData(pRecordObject);
+		}
+
 		if (this._Settings.DebugLog)
 		{
 			this.log.debug(`Informary Data->Form marshalling recursive entry...`);
@@ -214,12 +402,18 @@ class Informary
 				}
 			});
 		
-		return fCallback();
+		if (!pParentPropertyAddress)
+		{
+			return fCallback(tmpRecoveryState);
+		}
+		else
+		{
+			return fCallback();
+		}
 	}
 
 	marshalFormToData (pRecordObject, fCallback)
 	{
-		let tmpOperationTime = this.log.getTimeStamp();
 		if (this._Settings.DebugLog)
 		{
 			this.log.debug(`Informary Form->Data marshalling recursive entry...`);

@@ -40,26 +40,28 @@
   },
   "homepage": "https://github.com/stevenvelozo/informary#readme",
   "devDependencies": {
-    "@babel/core": "^7.4.4",
-    "@babel/preset-env": "^7.4.4",
+    "@babel/core": "^7.17.9",
+    "@babel/preset-env": "^7.16.11",
     "@testing-library/dom": "^8.13.0",
-    "async": "^2.6.2",
-    "browserify": "^16.2.3",
-    "chai": "4.2.0",
+    "async": "^3.2.3",
+    "browserify": "^17.0.0",
+    "chai": "4.3.6",
     "gulp": "^4.0.2",
     "gulp-babel": "^8.0.0",
     "gulp-buble": "^0.9.0",
-    "gulp-sourcemaps": "^2.6.5",
-    "gulp-terser": "^1.1.7",
+    "gulp-sourcemaps": "^3.0.0",
+    "gulp-terser": "^2.1.0",
     "gulp-util": "^3.0.8",
-    "mocha": "6.1.4",
-    "nyc": "^14.1.0",
+    "mocha": "9.2.2",
+    "nyc": "^15.1.0",
     "vinyl-buffer": "^1.0.1",
-    "vinyl-source-stream": "^2.0.0"
+    "vinyl-source-stream": "^2.0.0",
+    "npm-check-updates": "^12.5.9",
+    "jsdom": "^19.0.0"
   },
   "dependencies": {
     "cachetrax": "^1.0.0",
-    "jquery": "^3.6.0",
-    "jsdom": "^19.0.0"
+    "deep-object-diff": "^1.1.7",
+    "jquery": "^3.6.0"
   }
 }

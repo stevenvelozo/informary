@@ -16,6 +16,8 @@ const libFS = require("fs");
 let tmpHarnessHTML = libFS.readFileSync(`${__dirname}/harness/informary_html_test_harness.html`);
 let tmpHarnessDataObject = require(`./harness/informary_harness_data_1.json`);
 
+let getFreshHarnessDataObject = JSON.parse(JSON.stringify(tmpHarnessDataObject));
+
 const libJquery = require("jquery");
 
 const libJSDOM = require("jsdom");
@@ -32,110 +34,17 @@ var _MockSettings = (
 
 suite
 (
-	'Basic',
+	'Advanced - Recovery',
 	()=>
 	{
 		setup(()=>{});
-
-		suite
-		(
-			'Object Sanity',
-			()=>
-			{
-				test
-				(
-					'The class should initialize itself into a happy little object.',
-					(fDone)=>
-					{
-						var testScope = {};
-						var testInformary = new libInformary(_MockSettings, testScope);
-						Expect(testInformary).to.be.an('object', 'Informary should initialize as an object directly from the require statement.');
-						Expect(testInformary._Settings)
-							.to.be.a('object');
-						fDone();
-					}
-				);
-				test
-				(
-					'Try with a global scope...',
-					(fDone)=>
-					{
-						var testInformary = new libInformary(_MockSettings);
-						Expect(testInformary).to.be.an('object', 'Informary should initialize as an object directly from the require statement.');
-						fDone();
-					}
-				);
-				test
-				(
-					'Initialize with some basic settings',
-					(fDone)=>
-					{
-						var testInformary = new libInformary(
-							{
-								Server:'https://my.server.com/1.0/',
-								Entity:'Animal',
-								Cached:false
-							});
-						Expect(testInformary).to.be.an('object', 'Informary should initialize as an object directly from the require statement.');
-						Expect(testInformary._Settings.Entity)
-							.to.equal('Animal');
-						Expect(testInformary._Settings.Server)
-							.to.equal('https://my.server.com/1.0/');
-						fDone();
-					}
-				)
-			}
-		);
-		suite
-		(
-			'Logging Tests',
-			()=>
-			{
-				test
-				(
-					'Each log channel should work.',
-					(fDone)=>
-					{
-						var testScope = {};
-						var testInformary = new libInformary(_MockSettings, testScope);
-
-						var tmpTestStart = testInformary.log.getTimeStamp();
-
-						Expect(testInformary.log)
-							.to.be.a('object');
-						testInformary.log.trace('Test 1');
-						testInformary.log.debug('Test 2');
-						testInformary.log.info('Test 3');
-						testInformary.log.warning('Test 4');
-						testInformary.log.error('Test 5');
-
-
-						testInformary.log.logTimeDelta(tmpTestStart);
-
-						// Test time logging
-						testInformary.log.logTime();
-						testInformary.log.logTimeDelta(tmpTestStart);
-
-						testInformary.log.logTime('Custom Timestamp Message');
-						testInformary.log.logTimeDelta(tmpTestStart);
-
-						// Exercise object logging
-						testInformary.log.debug('Settings: ', testInformary.settings);
-
-						testInformary.log.logTimeDelta(tmpTestStart, 'Test Complete');
-
-						fDone();
-					}
-				);
-			}
-		);
 		suite(
-			'Basic Marshalling',
+			'Recovery Scenarios',
 			()=>
 			{
 				test
 				(
-					'Marshalling data from the form...',
+					'Checking Deltas...',
 					(fDone)=>
 					{
 						var tmpDOM = new JSDOM(tmpHarnessHTML);
@@ -160,7 +69,7 @@ suite
 				);
 				test
 				(
-					'Marshalling data to the form...',
+					'Shifting Data from Delta to Delta...',
 					(fDone)=>
 					{
 						// jsDOM must be instantiated with a url for the localStorage to work.

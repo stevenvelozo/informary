@@ -1,0 +1,21 @@
+{
+    "Header": {
+        "WorkDate": "2020-11-09",
+        "Inspector": "James Smith",
+        "Location": {
+            "Description": "SB I5 Milepost 678 near Redding",
+            "Station": "Station 10+1.054 RT"
+        },
+        "WorkCompleted": "on"
+    },
+    "Rows": {
+        "Row_1": {
+            "PersonnelName": "Sally Suthers",
+            "Contractor": "ABC Demolition",
+            "LineItem": "1001 - Clearing and Grubbing",
+            "Equipment": "Ford F450 Pickup",
+            "Hours": "5",
+            "Description": "Removing bulk landscape material"
+        }
+    }
+}
