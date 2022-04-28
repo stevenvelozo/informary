@@ -23,7 +23,7 @@ class Informary
 				// The form we are dealing with (this is a hash set on the form itself)
 				Form: 'UNSET_HTML_FORM_ID',
 
-				IDUser: 0,
+				User: 0,
 
 				// The number of undo levels available
 				UndoLevels: 25,

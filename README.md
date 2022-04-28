@@ -1,5 +1,7 @@
 # Informary
 
+![Complex Flow](https://github.com/stevenvelozo/informary/raw/master/diagrams/ComplexFlow.png)
+
 ## Building
 
 ```
