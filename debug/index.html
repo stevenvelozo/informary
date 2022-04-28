@@ -100,7 +100,17 @@
 
             var storeInformarySourceData = function()
             {
-                libInformary.storeSourceData(pRecordObject);
+                var tmpCallback = (typeof(fCallback) === 'function') ? fCallback : function() {};
+                libInformary.marshalFormToData(window.informaryState,
+                    (pError) =>
+                    {
+                        if (pError)
+                        {
+                            // The form marshalling had some kind of error!
+                            this.log.error('INFORMARY MARSHAL FROM FORM ERROR: '+pError);
+                        }
+                        libInformary.storeSourceData(window.informaryState);
+                    });
             }
 
             var checkInformaryState = function()
