@@ -452,7 +452,7 @@ class Informary
 				{
 					this.clearRecoveryScenarioData();
 					// Store a new recovery data
-					this.storeSourceData();
+					//this.storeSourceData();
 				});
 		}
 	}
