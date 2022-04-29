@@ -384,10 +384,10 @@ class Informary
 					this.marshalDataToForm(tmpSnapshotData,
 						()=>
 						{
-							this._RecoveryDocumentState = tmpRecoveryData;
+							this._RecoveryDocumentState = tmpSnapshotData;
 
 							this.log.info(`Informary reverted to snapshot ID ${tmpSnapshotKey}`);
-							if ((JSON.stringify(tmpCurrentFormData) == JSON.stringify(tmpRecoveryData)) && this._UndoKeys.length > 0)
+							if ((JSON.stringify(tmpCurrentFormData) == JSON.stringify(tmpSnapshotData)) && this._UndoKeys.length > 0)
 							{
 								this.revertToPreviousSnapshot();
 							}
