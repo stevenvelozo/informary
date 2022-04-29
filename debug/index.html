@@ -90,7 +90,12 @@
 
             var undoInformaryDataChanges = function()
             {
-                libInformary.revertToLastSnapshot();
+                libInformary.revertToPreviousSnapshot();
+            }
+
+            var redoInformaryDataChanges = function()
+            {
+                libInformary.reapplyNextRevertedSnapshot();
             }
 
             var snapshotInformaryData = function()
@@ -212,6 +217,7 @@
                     <form novalidate>
                         <div class="input=group mb-3">
                             <button type="button" class="btn btn-primary" onclick="undoInformaryDataChanges()">Undo</button>
+                            <button type="button" class="btn btn-primary" onclick="redoInformaryDataChanges()">Redo</button>
                             <button type="button" class="btn btn-primary" onclick="snapshotInformaryData()">Snapshot</button>
                         </div>
                     </form>

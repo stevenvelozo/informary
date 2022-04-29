@@ -62,8 +62,11 @@ class Informary
 
 		this._UndoKeys = [];
 		this._UndoBuffer = new libCacheTraxx();
-		// Default to 10 undo levels if it isn't passed in via settings
+		// Default to 25 undo levels if it isn't passed in via settings
 		this._UndoBuffer.maxLength = this._Settings.UndoLevels ? this._Settings.UndoLevels : 25;
+		this._RedoKeys = [];
+		this._RedoBuffer = new libCacheTraxx();
+		this._RedoBuffer.maxLength = this._UndoBuffer.maxLength;
 
 		// The initially loaded document state (filled out when pushed to form)
 		this._SourceDocumentState = false;
@@ -324,27 +327,82 @@ class Informary
 	snapshotData()
 	{
 		let tmpNewUndoKey = Date.now().toString();
-		this._UndoKeys.push(tmpNewUndoKey);
+
+		// Check to see if there are any changes to the data to be stored
+		let tmpOldRecoveryState = JSON.stringify(this._RecoveryDocumentState);
+
 		this.storeRecoveryData(
 			()=>
 			{
-				this._UndoBuffer.put(this._RecoveryDocumentState, tmpNewUndoKey);
+				if (tmpOldRecoveryState != JSON.stringify(this._RecoveryDocumentState))
+				{
+					if (this._Settings.DebugLog)
+					{
+						this.log.debug(`Creating recovery snapshot at [${tmpNewUndoKey}]...`);
+					}
+
+					// Destroy all data in the redo ring, because this new snapshot invalidates it.
+					while (this._RedoKeys.length > 0)
+					{
+						let tmpRedoKey = this._RedoKeys.pop();
+						this._RedoBuffer.expire(tmpRedoKey);
+					}
+
+					this._UndoKeys.push(tmpNewUndoKey);
+					this._UndoBuffer.put(this._RecoveryDocumentState, tmpNewUndoKey);
+
+				}
+				else
+				{
+					if (this._Settings.DebugLog)
+					{
+						this.log.debug(`Skipped creating recovery snapshot at [${tmpNewUndoKey}] because there were no changes to the recovery state...`);
+					}
+				}
 			});
 	}
 
-	revertToLastSnapshot()
+	revertToPreviousSnapshot()
 	{
 		let tmpSnapshotKey = this._UndoKeys.pop();
 		let tmpSnapshotData = this._UndoBuffer.read(tmpSnapshotKey);
 
 		if (tmpSnapshotData)
 		{
-			// Remove the expired snapshot of data
+			// Add it to the redo buffer
+			this._RedoKeys.push(tmpSnapshotKey);
+			this._RedoBuffer.put(tmpSnapshotData, tmpSnapshotKey);
+
+			// Remove the expired snapshot of data from the Undu buffer
 			this._UndoBuffer.expire(tmpSnapshotKey);
+
 			this.marshalDataToForm(tmpSnapshotData,
 				()=>
 				{
 					this.log.info(`Informary reverted to snapshot ID ${tmpSnapshotKey}`);
+				});
+		}
+	}
+
+
+	reapplyNextRevertedSnapshot()
+	{
+		let tmpSnapshotKey = this._RedoKeys.pop();
+		let tmpSnapshotData = this._RedoBuffer.read(tmpSnapshotKey);
+
+		if (tmpSnapshotData)
+		{
+			// Add it to the undo buffer
+			this._UndoKeys.push(tmpSnapshotKey);
+			this._UndoBuffer.put(tmpSnapshotData, tmpSnapshotKey);
+
+			// Remove the expired snapshot of data from the Redo buffer
+			this._RedoBuffer.expire(tmpSnapshotKey);
+
+			this.marshalDataToForm(tmpSnapshotData,
+				()=>
+				{
+					this.log.info(`Informary reapplied snapshot ID ${tmpSnapshotKey}`);
 				});
 		}
 	}
