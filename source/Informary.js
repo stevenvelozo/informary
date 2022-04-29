@@ -373,14 +373,26 @@ class Informary
 			this._RedoKeys.push(tmpSnapshotKey);
 			this._RedoBuffer.put(tmpSnapshotData, tmpSnapshotKey);
 
-			// Remove the expired snapshot of data from the Undu buffer
-			this._UndoBuffer.expire(tmpSnapshotKey);
-
-			this.marshalDataToForm(tmpSnapshotData,
+			// Check if the form data matches and if so advance back one step
+			let tmpCurrentFormData = {};
+			this.marshalFormToData(tmpCurrentFormData, 
 				()=>
 				{
-					this.log.info(`Informary reverted to snapshot ID ${tmpSnapshotKey}`);
-				});
+					// Remove the expired snapshot of data from the Undu buffer
+					this._UndoBuffer.expire(tmpSnapshotKey);
+
+					this.marshalDataToForm(tmpSnapshotData,
+						()=>
+						{
+							this._RecoveryDocumentState = tmpRecoveryData;
+
+							this.log.info(`Informary reverted to snapshot ID ${tmpSnapshotKey}`);
+							if ((JSON.stringify(tmpCurrentFormData) == JSON.stringify(tmpRecoveryData)) && this._UndoKeys.length > 0)
+							{
+								this.revertToPreviousSnapshot();
+							}
+						});
+				});	
 		}
 	}
 
@@ -399,10 +411,22 @@ class Informary
 			// Remove the expired snapshot of data from the Redo buffer
 			this._RedoBuffer.expire(tmpSnapshotKey);
 
-			this.marshalDataToForm(tmpSnapshotData,
+			// Check if the form data matches and if so advance back one step
+			let tmpCurrentFormData = {};
+			this.marshalFormToData(tmpCurrentFormData, 
 				()=>
 				{
-					this.log.info(`Informary reapplied snapshot ID ${tmpSnapshotKey}`);
+					this.marshalDataToForm(tmpSnapshotData,
+						()=>
+						{
+							this._RecoveryDocumentState = tmpSnapshotData;
+
+							this.log.info(`Informary reapplied snapshot ID ${tmpSnapshotKey}`);
+							if ((JSON.stringify(tmpCurrentFormData) == JSON.stringify(tmpSnapshotData)) && this._RedoKeys.length > 0)
+							{
+								this.reapplyNextRevertedSnapshot();
+							}
+						});
 				});
 		}
 	}
