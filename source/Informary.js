@@ -5,6 +5,7 @@
 
 let libObjectDiff = require('deep-object-diff');
 let libCacheTraxx = require('cachetrax');
+const { findAllByDisplayValue } = require('@testing-library/dom');
 
 /**
 * Informary browser sync library
@@ -362,8 +363,24 @@ class Informary
 			});
 	}
 
+	undoSnapshotCount()
+	{
+		return this._UndoKeys.length - 1;
+	}
+
+	redoSnapshotCount()
+	{
+		return this._RedoKeys.length;
+	}
+
 	revertToPreviousSnapshot()
 	{
+		if (this._UndoKeys.length <= 1)
+		{
+			this.log.info(`Not enough undo snapshots; skipping undo.`);
+			return false;
+		}
+
 		let tmpSnapshotKey = this._UndoKeys.pop();
 		let tmpSnapshotData = this._UndoBuffer.read(tmpSnapshotKey);
 
@@ -522,12 +539,6 @@ class Informary
 	{
 		// Because this is recursive, we only want to call this on the outermost call of the stack.
 		let tmpRecoveryState = false;
-		if (!pParentPropertyAddress)
-		{
-			//tmpRecoveryState = this.checkRecoveryState(pRecordObject);
-			// Set the "Loaded document" state -- what the server thinks the record is.
-			//this.storeSourceData(pRecordObject);
-		}
 
 		if (this._Settings.DebugLog)
 		{
