@@ -551,6 +551,16 @@ class Informary
 			return fCallback('Invalid record object passed in!');
 		}
 
+		if (pRecordObject === null)
+		{
+			return fCallback();
+		}
+
+		if (pRecordObject === undefined)
+		{
+			return fCallback();
+		}
+
 		let tmpParentPropertyAddress = (typeof(pParentPropertyAddress) !== 'undefined') ? pParentPropertyAddress : false;
 		let tmpParentPropertyAddressString = (typeof(pParentPropertyAddress) !== 'undefined') ? pParentPropertyAddress : 'JSON OBJECT ROOT';
 		if (this._Settings.DebugLog)

@@ -193,6 +193,42 @@ suite
 							});
 					}
 				);
+				test
+				(
+					'Marshalling data to the form with a null...',
+					(fDone)=>
+					{
+						// jsDOM must be instantiated with a url for the localStorage to work.
+						var tmpDOM = new JSDOM(tmpHarnessHTML, { url: "https://test.informary.org/" });
+
+						var tmpInformary = new libInformary({Form:"SampleForm", __VirtualDOM:tmpDOM.window, DebugLog:true}, 'Context-1');
+
+						tmpInformary.setStorageProvider(tmpDOM.window.localStorage);
+	
+						var tmpDataObject = JSON.parse(JSON.stringify(tmpHarnessDataObject));
+						tmpDataObject.NullValue = null;
+
+						tmpInformary.marshalDataToForm(tmpDataObject,
+							function(pError)
+							{
+								if (pError)
+								{
+									// The form marshalling had some kind of error!
+									console.log('INFORMARY MARSHAL TO FORM ERROR: '+pError);
+									console.log(JSON.stringify(tmpDataObject,null,4));
+								}
+
+								console.log(JSON.stringify(tmpDataObject,null,4));
+
+								var tmpJquery = libJquery(tmpDOM.window);
+								//console.log(JSON.stringify(tmpDataObject,null,4));
+								expect(tmpJquery('#workDate').val()).to.equal('2020-11-09');
+								expect(tmpJquery('#row_equipment_1').val()).to.equal('Ford F450 Pickup');
+
+								fDone();
+							});
+					}
+				);
 			}
 		)
 	}
