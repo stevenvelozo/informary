@@ -305,6 +305,33 @@ class Informary
 		}
 	}
 
+	setValueAtAddressInContainer(pRecordObject, pFormContainerAddress, pFormContainerIndex, pFormValueAddress, pFormValue)
+	{
+		// First see if there *is* a container object
+		let tmpContainerObject = this.getValueAtAddress(pRecordObject, pFormContainerAddress);
+
+		if (typeof(pFormContainerAddress) !== 'string') return false;
+
+		let tmpFormContainerIndex = parseInt(pFormContainerIndex, 10);
+		if (isNaN(tmpFormContainerIndex)) return false;
+
+		if ((typeof(tmpContainerObject) !== 'object') || (!Array.isArray(tmpContainerObject)))
+		{
+			// Check if there is a value here and we want to store it in the "__OverwrittenData" thing
+			tmpContainerObject = [];
+			this.setValueAtAddress(pRecordObject, pFormContainerAddress, tmpContainerObject);
+		}
+
+		for (let i = 0; (tmpContainerObject.length + i) <= tmpFormContainerIndex; i++)
+		{
+			// Add objects to this container until it has enough
+			tmpContainerObject.push({});
+		}
+
+		// Now set the value *in* the container object
+		return this.setValueAtAddress(tmpContainerObject[tmpFormContainerIndex], pFormValueAddress, pFormValue);
+	}
+
 	// Write out source data
 	storeSourceData(pData)
 	{
@@ -535,7 +562,16 @@ class Informary
 		}
 	}
 
-	marshalDataToForm (pRecordObject, fCallback, pParentPropertyAddress)
+	createArrayContainers(pRecordObject, fCallback, pArrayPropertyAddress)
+	{
+		// Much simplified recursion that generates array containers
+		if (this._Settings.DebugLog)
+		{
+			this.log.debug(`Informary Data->Form marshalling recursive entry...`);
+		}
+	}
+
+	marshalDataToForm (pRecordObject, fCallback, pParentPropertyAddress, pContainerPropertyAddress, pContainerIndex)
 	{
 		// Because this is recursive, we only want to call this on the outermost call of the stack.
 		let tmpRecoveryState = false;
@@ -563,6 +599,10 @@ class Informary
 
 		let tmpParentPropertyAddress = (typeof(pParentPropertyAddress) !== 'undefined') ? pParentPropertyAddress : false;
 		let tmpParentPropertyAddressString = (typeof(pParentPropertyAddress) !== 'undefined') ? pParentPropertyAddress : 'JSON OBJECT ROOT';
+
+		let tmpContainerPropertyAddress = (typeof(pContainerPropertyAddress) !== 'undefined') ? pContainerPropertyAddress : false;
+		let tmpContainerPropertyIndex = (typeof(pContainerIndex) !== 'undefined') ? pContainerIndex : false; 
+
 		if (this._Settings.DebugLog)
 		{
 			this.log.debug(`Informary Data->Form found parent address [${tmpParentPropertyAddress}] and is parsing properties`);
@@ -584,20 +624,45 @@ class Informary
 				{
 					// If it's an object, check if we should be marshaling the whole value in or recursing.
 					case 'object':
-						// We've switched this to synchronous for safe browser mode
-						// Leaving an empty callback in there in case we decide to switch back.
-						return this.marshalDataToForm(tmpRecord, ()=>{}, tmpPropertyAddress);
+						// Check to see if it's an array, as we will put it into the extended object.
+						if (Array.isArray(tmpRecord))
+						{
+							for (let i = 0; i < tmpRecord.length; i++)
+							{
+								this.marshalDataToForm(tmpRecord[i], ()=>{}, undefined, tmpPropertyAddress, i);
+							}
+						}
+						else
+						{
+							// We've switched this to synchronous for safe browser mode
+							// Leaving an empty callback in there in case we decide to switch back.
+							return this.marshalDataToForm(tmpRecord, ()=>{}, tmpPropertyAddress, tmpContainerPropertyAddress, tmpContainerPropertyIndex);
+						}
 						break;
 					// Ignore undefined properties
 					case 'undefined':
 						break;
 					// Otherwise marshal it into the form
 					default:
-						let tmpFormElement = this._Dependencies.jquery(`
+						let tmpFormElement = [];
+
+						if (tmpContainerPropertyAddress && tmpContainerPropertyIndex)
+						{
+							// This is an array element
+							tmpFormElement = this._Dependencies.jquery(`
+								input[data-i-form="${this._Settings.Form}"][data-i-datum="${tmpPropertyAddress}"][data-i-container="${tmpContainerPropertyAddress}"][data-i-index="${tmpContainerPropertyIndex}"], 
+								select[data-i-form="${this._Settings.Form}"][data-i-datum="${tmpPropertyAddress}"][data-i-container="${tmpContainerPropertyAddress}"][data-i-index="${tmpContainerPropertyIndex}"],
+								textarea[data-i-form="${this._Settings.Form}"][data-i-datum="${tmpPropertyAddress}"][data-i-container="${tmpContainerPropertyAddress}"][data-i-index="${tmpContainerPropertyIndex}"]
+							`);
+						}
+						else
+						{
+							tmpFormElement = this._Dependencies.jquery(`
 								input[data-i-form="${this._Settings.Form}"][data-i-datum="${tmpPropertyAddress}"], 
 								select[data-i-form="${this._Settings.Form}"][data-i-datum="${tmpPropertyAddress}"],
 								textarea[data-i-form="${this._Settings.Form}"][data-i-datum="${tmpPropertyAddress}"]
 							`);
+						}
 						if (tmpFormElement.length > 0) {
 							// set the text area to the text content
 							if (this._Dependencies.jquery(tmpFormElement)[0].tagName === 'TEXTAREA') {
@@ -649,6 +714,8 @@ class Informary
 			(pRecordIndex, pRecordAddress) =>
 			{
 				let tmpFormValueAddress = this._Dependencies.jquery(pRecordAddress).attr('data-i-datum');
+				let tmpFormContainerAddress = this._Dependencies.jquery(pRecordAddress).attr('data-i-container');
+				let tmpFormContainerIndex = this._Dependencies.jquery(pRecordAddress).attr('data-i-index');
 				let tmpFormValue;
 				// check to see which element type this is before trying to collect the value
 				if (this._Dependencies.jquery(pRecordAddress).tagName === 'TEXTAREA') {
@@ -667,7 +734,14 @@ class Informary
 					tmpFormValueAddress = '__ERROR.UnsetDatum.'+tmpUnknownValueIndex;
 					tmpUnknownValueIndex++;
 				}
-				this.setValueAtAddress(pRecordObject, tmpFormValueAddress, tmpFormValue);
+				if (tmpFormContainerAddress && tmpFormContainerIndex)
+				{
+					this.setValueAtAddressInContainer(pRecordObject, tmpFormContainerAddress, tmpFormContainerIndex, tmpFormValueAddress, tmpFormValue);
+				}
+				else
+				{
+					this.setValueAtAddress(pRecordObject, tmpFormValueAddress, tmpFormValue);
+				}
 			});
 
 		return fCallback();
