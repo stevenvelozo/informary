@@ -392,7 +392,7 @@ class Informary
 
 	undoSnapshotCount()
 	{
-		return this._UndoKeys.length - 1;
+		return this._UndoKeys.length;
 	}
 
 	redoSnapshotCount()
@@ -402,7 +402,7 @@ class Informary
 
 	revertToPreviousSnapshot()
 	{
-		if (this._UndoKeys.length <= 1)
+		if (this._UndoKeys.length < 1)
 		{
 			this.log.info(`Not enough undo snapshots; skipping undo.`);
 			return false;
