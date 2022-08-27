@@ -390,8 +390,35 @@ class Informary
 			});
 	}
 
+	snapshotDataInitial()
+	{
+		let tmpNewUndoKey = Date.now().toString();
+
+		if (this._UndoKeys.length > 0)
+		{
+			this.log.info(`Skipping creation of initial snapshot because one already exists.`);
+			return false;
+		}
+
+
+		this.storeRecoveryData(
+			()=>
+			{
+				if (this._Settings.DebugLog)
+				{
+					this.log.debug(`Creating recovery snapshot at [${tmpNewUndoKey}]...`);
+				}
+
+				this._UndoKeys.push(tmpNewUndoKey);
+				this._UndoBuffer.put(this._RecoveryDocumentState, tmpNewUndoKey);
+			});
+
+		return true;
+	}
+
 	undoSnapshotCount()
 	{
+		// The initial snapshot is special to prevent confusing conditions when form data hasn't been edited.
 		return this._UndoKeys.length;
 	}
 
@@ -400,12 +427,14 @@ class Informary
 		return this._RedoKeys.length;
 	}
 
-	revertToPreviousSnapshot()
+	revertToPreviousSnapshot(fCallback)
 	{
+		let tmpCallback = (typeof(fCallback) == 'function') ? fCallback : ()=>{};
+
 		if (this._UndoKeys.length < 1)
 		{
 			this.log.info(`Not enough undo snapshots; skipping undo.`);
-			return false;
+			return tmpCallback(false);
 		}
 
 		let tmpSnapshotKey = this._UndoKeys.pop();
@@ -433,16 +462,28 @@ class Informary
 							this.log.info(`Informary reverted to snapshot ID ${tmpSnapshotKey}`);
 							if ((JSON.stringify(tmpCurrentFormData) == JSON.stringify(tmpSnapshotData)) && this._UndoKeys.length > 0)
 							{
-								this.revertToPreviousSnapshot();
+								return this.revertToPreviousSnapshot(tmpCallback);
 							}
+
+							if (this._UndoKeys.length == 0)
+							{
+								this.log.info(`Snapshot Data Depleted -- Creating Extra Undo Snapshot`)
+								this.snapshotDataInitial();
+							}
+
+							return tmpCallback(true);
 						});
 				});	
 		}
+
+		return tmpCallback(false);
 	}
 
 
-	reapplyNextRevertedSnapshot()
+	reapplyNextRevertedSnapshot(fCallback)
 	{
+		let tmpCallback = (typeof(fCallback) == 'function') ? fCallback : ()=>{};
+
 		let tmpSnapshotKey = this._RedoKeys.pop();
 		let tmpSnapshotData = this._RedoBuffer.read(tmpSnapshotKey);
 
@@ -468,11 +509,16 @@ class Informary
 							this.log.info(`Informary reapplied snapshot ID ${tmpSnapshotKey}`);
 							if ((JSON.stringify(tmpCurrentFormData) == JSON.stringify(tmpSnapshotData)) && this._RedoKeys.length > 0)
 							{
-								this.reapplyNextRevertedSnapshot();
+								// If the old form data matches the applied data, roll back farther
+								return this.reapplyNextRevertedSnapshot(tmpCallback);
 							}
+							
+							return tmpCallback(true);
 						});
 				});
 		}
+
+		return tmpCallback(false);
 	}
 
 	clearRecoveryData()
@@ -485,8 +531,10 @@ class Informary
 		return this.readData('Recovery');
 	}
 
-	restoreRecoveryScenarioData()
+	restoreRecoveryScenarioData(fCallback)
 	{
+		let tmpCallback = (typeof(fCallback) == 'function') ? fCallback : ()=>{};
+
 		let tmpRecoveryScenarioData = this.readRecoveryScenario();
 
 		if (tmpRecoveryScenarioData && tmpRecoveryScenarioData.ExistingRecovery)
@@ -497,8 +545,11 @@ class Informary
 					this.clearRecoveryScenarioData();
 					// Store a new recovery data
 					//this.storeSourceData();
+					return tmpCallback(true);
 				});
 		}
+
+		return tmpCallback(false);
 	}
 
 	clearRecoveryScenarioData()
