@@ -124,6 +124,15 @@
                 $('#informaryCheckState').val(JSON.stringify(tmpDataObject,null,4));
             }
 
+            var checkInformaryDeltas = function()
+            {
+                libInformary.compareCurrentStateToUndoAndRedo(
+                    (pDeltas)=>
+                    {
+                        $('#informaryDeltas').val(JSON.stringify(pDeltas,null,4));
+                    });
+            }
+
             var restoreInformaryCheckpoint = function()
             {
                 libInformary.restoreRecoveryScenarioData();
@@ -333,6 +342,27 @@
                         <button type="button" class="btn btn-success" onclick="storeInformarySourceData()">Store Source Data</button>
                         <button type="button" class="btn btn-success" onclick="checkInformaryState()">Check Informary State</button>
                         <button type="button" class="btn btn-success" onclick="restoreInformaryCheckpoint()">Restore Checkpoint State</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+
+           <!-- This below is to aid in interactive testing of informary undo/redo delta functionality -->
+           <div class="row mt-5 d-print-none">
+            <div class="col-md-12"  style="background-color:#eeffee;border-radius:10px;border:2px solid #353535;">
+                <h4 class="mb-3 mt-3">Informary Undo/Redo Data Delta Testing</h4>
+                <form novalidate>
+                    <hr class="w-100 mb-5 mt-3" />
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">Undo/Redo Deltas</span>
+                        </div>
+                        <textarea class="form-control" aria-label="Informary-Deltas" style="min-height:6rem;height:24rem;max-height:40rem;" id="informaryDeltas">
+                        </textarea>
+                    </div>
+                    <div class="input=group mb-3">
+                        <button type="button" class="btn btn-success" onclick="checkInformaryDeltas()">Check Undo/Redo Deltas</button>
                     </div>
                 </form>
             </div>

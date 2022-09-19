@@ -613,6 +613,53 @@ class Informary
 		}
 	}
 
+	compareCurrentStateToUndoAndRedo(fCallback)
+	{
+		let tmpCallBack = (typeof(fCallback) === 'function') ? fCallback : () => {};
+		let tmpCurrentStateData = {};
+		let tmpCurrentUndoObject = {};
+		let tmpCurrentRedoObject = {};
+
+		this.marshalFormToData(tmpCurrentStateData, 
+			() =>
+			{
+				let tmpCurrentStateDataJSON = JSON.stringify(tmpCurrentStateData);
+
+				if (this._UndoKeys.length > 0)
+				{
+					let tmpCurrentUndoBufferSnapshotKey = this._UndoKeys[this._UndoKeys.length - 1];
+					tmpCurrentUndoObject = this._UndoBuffer.read(tmpCurrentUndoBufferSnapshotKey);
+				}
+
+				if (this._RedoKeys.length > 0)
+				{
+					// Because there can be duplication of records in the redo buffer that may include 
+					// the current data in the form multiple times, we need to enumerate the redo buffer
+					// until the JSON doesn't match the current data.
+					let tmpFirstRedoIndexWithDifferences = this._RedoKeys.length - 1;
+					for (let i = this._RedoKeys.length-1; i >= 0; i--)
+					{
+						let tmpRedoComparisonJSON = JSON.stringify(this._RedoBuffer.read(this._RedoKeys[i]));
+						if (tmpRedoComparisonJSON != tmpCurrentStateDataJSON)
+						{
+							tmpFirstRedoIndexWithDifferences = i;
+							// Once we have found a set of redo data that doesn't match, we don't want to keep looking
+							break;
+						}
+					}
+					tmpCurrentRedoObject = this._RedoBuffer.read(this._RedoKeys[tmpFirstRedoIndexWithDifferences]);
+				}
+
+				let tmpComparisonData = (
+					{
+						UndoDelta: libObjectDiff.detailedDiff(tmpCurrentStateData, tmpCurrentUndoObject),
+						RedoDelta: libObjectDiff.detailedDiff(tmpCurrentStateData, tmpCurrentRedoObject)
+					});
+
+				tmpCallBack(tmpComparisonData);
+			});
+	}
+
 	createArrayContainers(pRecordObject, fCallback, pArrayPropertyAddress)
 	{
 		// Much simplified recursion that generates array containers
