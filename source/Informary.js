@@ -322,7 +322,7 @@ class Informary
 			this.setValueAtAddress(pRecordObject, pFormContainerAddress, tmpContainerObject);
 		}
 
-		for (let i = 0; (tmpContainerObject.length + i) <= tmpFormContainerIndex; i++)
+		for (let i = 0; (tmpContainerObject.length + i) <= (tmpFormContainerIndex+1); i++)
 		{
 			// Add objects to this container until it has enough
 			tmpContainerObject.push({});
@@ -653,8 +653,109 @@ class Informary
 				let tmpComparisonData = (
 					{
 						UndoDelta: libObjectDiff.detailedDiff(tmpCurrentStateData, tmpCurrentUndoObject),
-						RedoDelta: libObjectDiff.detailedDiff(tmpCurrentStateData, tmpCurrentRedoObject)
+						UndoGUIDDelta: {Added: [], Deleted: []},
+						RedoDelta: libObjectDiff.detailedDiff(tmpCurrentStateData, tmpCurrentRedoObject),
+						RedoGUIDDelta: {Added: [], Deleted: []}
 					});
+
+				
+				// Perform GUID diff operations
+				// Get all GUID values from the form
+				let tmpCurrentGUIDElements = [];
+				let tmpCurrentDataIndex = 0;
+				if (tmpCurrentStateData.hasOwnProperty('__GUID'))
+				{
+					tmpCurrentGUIDElements = Object.keys(tmpCurrentStateData.__GUID).sort();
+				}
+
+				// Get the deltas for undo data
+				let tmpUndoGUIDElements = [];
+				if (tmpCurrentUndoObject.hasOwnProperty('__GUID'))
+				{
+					tmpUndoGUIDElements = Object.keys(tmpCurrentUndoObject.__GUID).sort();
+				}
+				let tmpUndoDataIndex = 0;
+				let tmpUndoDataMaxIndex = tmpUndoGUIDElements.length - 1;
+				for(tmpCurrentDataIndex = 0; tmpCurrentDataIndex < tmpCurrentGUIDElements.length; tmpCurrentDataIndex++)
+				{
+					while((tmpUndoDataIndex <= tmpUndoDataMaxIndex) 
+							&& (tmpUndoGUIDElements[tmpUndoDataIndex] != tmpCurrentGUIDElements[tmpCurrentDataIndex]))
+					{
+						// Check to see if the string in the Undo keys is less than the string in the current form element.
+						// If so, it was deleted
+						if (tmpUndoGUIDElements[tmpUndoDataIndex] < tmpCurrentGUIDElements[tmpCurrentDataIndex])
+						{
+							tmpComparisonData.UndoGUIDDelta.Added.push(tmpUndoGUIDElements[tmpUndoDataIndex]);
+							tmpUndoDataIndex++;
+						}
+						else
+						{
+							// It must be greater if it is inequal, so break out of the while
+							break;
+						}
+					}
+
+					if ((tmpUndoDataIndex <= tmpUndoDataMaxIndex)
+						&& (tmpUndoGUIDElements[tmpUndoDataIndex] == tmpCurrentGUIDElements[tmpCurrentDataIndex]))
+					{
+						// If the elements match, skip it because it exists on both sides.
+						tmpUndoDataIndex++;
+					}
+					else
+					{
+						tmpComparisonData.UndoGUIDDelta.Deleted.push(tmpCurrentGUIDElements[tmpCurrentDataIndex]);
+					}
+				}
+				// If there are any GUIDS left in the Undo GUID list, they are additions
+				for(let i = tmpUndoDataIndex; i <= tmpUndoDataMaxIndex; i++)
+				{
+					tmpComparisonData.UndoGUIDDelta.Added.push(tmpUndoGUIDElements[i]);
+				}
+
+
+				// Get the deltas for Redo data
+				let tmpRedoGUIDElements = [];
+				if (tmpCurrentRedoObject.hasOwnProperty('__GUID'))
+				{
+					tmpRedoGUIDElements = Object.keys(tmpCurrentRedoObject.__GUID).sort();
+				}
+				let tmpRedoDataIndex = 0;
+				let tmpRedoDataMaxIndex = tmpRedoGUIDElements.length - 1;
+				for(tmpCurrentDataIndex = 0; tmpCurrentDataIndex < tmpCurrentGUIDElements.length; tmpCurrentDataIndex++)
+				{
+					while((tmpRedoDataIndex <= tmpRedoDataMaxIndex) 
+							&& (tmpRedoGUIDElements[tmpRedoDataIndex] != tmpCurrentGUIDElements[tmpCurrentDataIndex]))
+					{
+						// Check to see if the string in the Redo keys is less than the string in the current form element.
+						// If so, it was deleted
+						if (tmpRedoGUIDElements[tmpRedoDataIndex] < tmpCurrentGUIDElements[tmpCurrentDataIndex])
+						{
+							tmpComparisonData.RedoGUIDDelta.Added.push(tmpRedoGUIDElements[tmpRedoDataIndex]);
+							tmpRedoDataIndex++;
+						}
+						else
+						{
+							// It must be greater if it is inequal, so break out of the while
+							break;
+						}
+					}
+
+					if ((tmpRedoDataIndex <= tmpRedoDataMaxIndex)
+						&& (tmpRedoGUIDElements[tmpRedoDataIndex] == tmpCurrentGUIDElements[tmpCurrentDataIndex]))
+					{
+						// If the elements match, skip it because it exists on both sides.
+						tmpRedoDataIndex++;
+					}
+					else
+					{
+						tmpComparisonData.RedoGUIDDelta.Deleted.push(tmpCurrentGUIDElements[tmpCurrentDataIndex]);
+					}
+				}
+				// If there are any GUIDS left in the Redo GUID list, they are additions
+				for(let i = tmpRedoDataIndex; i <= tmpRedoDataMaxIndex; i++)
+				{
+					tmpComparisonData.RedoGUIDDelta.Added.push(tmpRedoGUIDElements[i]);
+				}
 
 				tmpCallBack(tmpComparisonData);
 			});
@@ -761,7 +862,8 @@ class Informary
 								textarea[data-i-form="${this._Settings.Form}"][data-i-datum="${tmpPropertyAddress}"]
 							`);
 						}
-						if (tmpFormElement.length > 0) {
+						if (tmpFormElement.length > 0)
+						{
 							// set the text area to the text content
 							if (this._Dependencies.jquery(tmpFormElement)[0].tagName === 'TEXTAREA') {
 								this._Dependencies.jquery(tmpFormElement)[0].textContent = tmpRecord;
@@ -771,6 +873,14 @@ class Informary
 							// otherwise just set the value for input
 							} else {
 								this._Dependencies.jquery(tmpFormElement).val(tmpRecord);
+							}
+							// Check if this is a GUID value and set the data-i-guid property in it
+							var tmpGUIDAttribute = this._Dependencies.jquery(this).attr('data-i-guid');
+							// For some browsers, `attr` is undefined; for others,
+							// `attr` is false.  Check for both.
+							if (typeof(tmpGUIDAttribute) !== 'undefined' && tmpGUIDAttribute !== false)
+							{
+								this._Dependencies.jquery(tmpFormElement).attr('data-i-guid', tmpRecord);
 							}
 						}	
 						break;
@@ -814,6 +924,7 @@ class Informary
 				let tmpFormValueAddress = this._Dependencies.jquery(pRecordAddress).attr('data-i-datum');
 				let tmpFormContainerAddress = this._Dependencies.jquery(pRecordAddress).attr('data-i-container');
 				let tmpFormContainerIndex = this._Dependencies.jquery(pRecordAddress).attr('data-i-index');
+				let tmpFormContainerGUID = this._Dependencies.jquery(pRecordAddress).attr('data-i-guid');
 				let tmpFormValue;
 				// check to see which element type this is before trying to collect the value
 				if (this._Dependencies.jquery(pRecordAddress).tagName === 'TEXTAREA') {
@@ -831,6 +942,11 @@ class Informary
 				{
 					tmpFormValueAddress = '__ERROR.UnsetDatum.'+tmpUnknownValueIndex;
 					tmpUnknownValueIndex++;
+				}
+				if (tmpFormContainerGUID)
+				{
+					let tmpGUIDValueAddress = '__GUID.'+tmpFormContainerGUID;
+					this.setValueAtAddress(pRecordObject, tmpGUIDValueAddress, tmpFormContainerGUID);
 				}
 				if (tmpFormContainerAddress && tmpFormContainerIndex)
 				{
