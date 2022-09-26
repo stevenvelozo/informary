@@ -828,14 +828,15 @@ class Informary
 						{
 							for (let i = 0; i < tmpRecord.length; i++)
 							{
-								this.marshalDataToForm(tmpRecord[i], ()=>{}, undefined, tmpPropertyAddress, i);
+								// The undefined is in the Property Address because this is an array element, and needs to be put in the array.
+								this.marshalDataToForm(tmpRecord[i], ()=>{}, undefined, tmpPropertyAddress, i.toString());
 							}
 						}
 						else
 						{
 							// We've switched this to synchronous for safe browser mode
 							// Leaving an empty callback in there in case we decide to switch back.
-							return this.marshalDataToForm(tmpRecord, ()=>{}, tmpPropertyAddress, tmpContainerPropertyAddress, tmpContainerPropertyIndex);
+							return this.marshalDataToForm(tmpRecord, ()=>{}, tmpPropertyAddress, tmpContainerPropertyAddress, tmpContainerPropertyIndex.toString());
 						}
 						break;
 					// Ignore undefined properties
