@@ -63,7 +63,7 @@ class InformaryLog
 		this.info(tmpMessage+': '+tmpDate.toString())
 	}
 
-	// Get a timestamp 
+	// Get a timestamp
 	getTimeStamp()
 	{
 		return +new Date();

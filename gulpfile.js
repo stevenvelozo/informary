@@ -10,6 +10,7 @@ const libTerser = require('gulp-terser');
 const libBuble = require('gulp-buble');
 const libSourcemaps = require('gulp-sourcemaps');
 const libGulpUtil = require('gulp-util');
+const libBabel = require('gulp-babel');
 
 // Build the module for the browser
 //   This gulp task is taken from the gulp recipe repository:
@@ -20,7 +21,7 @@ libGulp.task('minified',
 	var tmpBrowserify = libBrowserify(
 	{
 		entries: './source/Informary-Browser-Shim.js',
-		standalone: 'Fable',
+		standalone: 'Informary',
 		debug: true
 	});
 
@@ -29,6 +30,7 @@ libGulp.task('minified',
 		.pipe(libVinylBuffer())
 		.pipe(libSourcemaps.init({loadMaps: true}))
 				// Add transformation tasks to the pipeline here.
+				.pipe(libBabel())
 				.pipe(libTerser())
 				.on('error', libGulpUtil.log)
 		.pipe(libSourcemaps.write('./'))
@@ -51,6 +53,7 @@ libGulp.task('debug',
 		return tmpBrowserify.bundle()
 			.pipe(libVinylSourceStream('informary.js'))
 			.pipe(libVinylBuffer())
+					.pipe(libBabel())
 					.on('error', libGulpUtil.log)
 			.pipe(libGulp.dest('./dist/'));
 	});

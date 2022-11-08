@@ -5,7 +5,6 @@
 
 let libObjectDiff = require('deep-object-diff');
 let libCacheTraxx = require('cachetrax');
-const { findAllByDisplayValue } = require('@testing-library/dom');
 
 /**
 * Informary browser sync library
@@ -48,7 +47,7 @@ class Informary
 			// If no user was passed in, set a default of 0
 			this._Settings.User = 0;
 		}
-		
+
 		if (!this._Settings.Form)
 		{
 			this._Settings.Form = 'UNSET_HTML_FORM_ID';
@@ -92,7 +91,7 @@ class Informary
 
 	checkStorageProvider()
 	{
-		// When running in a browser, this likely won't be set.  If it isn't, 
+		// When running in a browser, this likely won't be set.  If it isn't,
 		if (!this._LocalStorage)
 		{
 			this._LocalStorage = window.localStorage;
@@ -342,9 +341,9 @@ class Informary
 	storeRecoveryData(fCallback)
 	{
 		let tmpCallback = (typeof(fCallback) == 'function') ? fCallback : ()=>{};
-		
+
 		let tmpRecoveryData = {};
-		this.marshalFormToData(tmpRecoveryData, 
+		this.marshalFormToData(tmpRecoveryData,
 			()=>
 			{
 				this._RecoveryDocumentState = tmpRecoveryData;
@@ -448,7 +447,7 @@ class Informary
 
 			// Check if the form data matches and if so advance back one step
 			let tmpCurrentFormData = {};
-			this.marshalFormToData(tmpCurrentFormData, 
+			this.marshalFormToData(tmpCurrentFormData,
 				()=>
 				{
 					// Remove the expired snapshot of data from the Undu buffer
@@ -473,7 +472,7 @@ class Informary
 
 							return tmpCallback(true);
 						});
-				});	
+				});
 		}
 
 		return tmpCallback(false);
@@ -498,7 +497,7 @@ class Informary
 
 			// Check if the form data matches and if so advance back one step
 			let tmpCurrentFormData = {};
-			this.marshalFormToData(tmpCurrentFormData, 
+			this.marshalFormToData(tmpCurrentFormData,
 				()=>
 				{
 					this.marshalDataToForm(tmpSnapshotData,
@@ -512,7 +511,7 @@ class Informary
 								// If the old form data matches the applied data, roll back farther
 								return this.reapplyNextRevertedSnapshot(tmpCallback);
 							}
-							
+
 							return tmpCallback(true);
 						});
 				});
@@ -600,7 +599,7 @@ class Informary
 				tmpRecoveryData.Diffs.ExistingRecovery_ExistingSource = tmpRecoveryDifferences;
 				tmpRecoveryData.Diffs.ExistingSource_NewSource = libObjectDiff.detailedDiff(tmpRecoveryData.ExistingSource, tmpRecoveryData.NewSource);
 				tmpRecoveryData.Diffs.ExistingRecovery_NewSource = libObjectDiff.detailedDiff(tmpRecoveryData.ExistingRecovery, tmpRecoveryData.NewSource);
-				
+
 				// Put the index data in the object for helpfulness
 				tmpRecoveryData.Index = {};
 				tmpRecoveryData.Index.ExistingSource = this.readIndexValue('Source');
@@ -620,7 +619,7 @@ class Informary
 		let tmpCurrentUndoObject = {};
 		let tmpCurrentRedoObject = {};
 
-		this.marshalFormToData(tmpCurrentStateData, 
+		this.marshalFormToData(tmpCurrentStateData,
 			() =>
 			{
 				let tmpCurrentStateDataJSON = JSON.stringify(tmpCurrentStateData);
@@ -633,7 +632,7 @@ class Informary
 
 				if (this._RedoKeys.length > 0)
 				{
-					// Because there can be duplication of records in the redo buffer that may include 
+					// Because there can be duplication of records in the redo buffer that may include
 					// the current data in the form multiple times, we need to enumerate the redo buffer
 					// until the JSON doesn't match the current data.
 					let tmpFirstRedoIndexWithDifferences = this._RedoKeys.length - 1;
@@ -658,7 +657,7 @@ class Informary
 						RedoGUIDDelta: {Added: [], Deleted: []}
 					});
 
-				
+
 				// Perform GUID diff operations
 				// Get all GUID values from the form
 				let tmpCurrentGUIDElements = [];
@@ -678,7 +677,7 @@ class Informary
 				let tmpUndoDataMaxIndex = tmpUndoGUIDElements.length - 1;
 				for(tmpCurrentDataIndex = 0; tmpCurrentDataIndex < tmpCurrentGUIDElements.length; tmpCurrentDataIndex++)
 				{
-					while((tmpUndoDataIndex <= tmpUndoDataMaxIndex) 
+					while((tmpUndoDataIndex <= tmpUndoDataMaxIndex)
 							&& (tmpUndoGUIDElements[tmpUndoDataIndex] != tmpCurrentGUIDElements[tmpCurrentDataIndex]))
 					{
 						// Check to see if the string in the Undo keys is less than the string in the current form element.
@@ -723,7 +722,7 @@ class Informary
 				let tmpRedoDataMaxIndex = tmpRedoGUIDElements.length - 1;
 				for(tmpCurrentDataIndex = 0; tmpCurrentDataIndex < tmpCurrentGUIDElements.length; tmpCurrentDataIndex++)
 				{
-					while((tmpRedoDataIndex <= tmpRedoDataMaxIndex) 
+					while((tmpRedoDataIndex <= tmpRedoDataMaxIndex)
 							&& (tmpRedoGUIDElements[tmpRedoDataIndex] != tmpCurrentGUIDElements[tmpCurrentDataIndex]))
 					{
 						// Check to see if the string in the Redo keys is less than the string in the current form element.
@@ -800,7 +799,7 @@ class Informary
 		let tmpParentPropertyAddressString = (typeof(pParentPropertyAddress) !== 'undefined') ? pParentPropertyAddress : 'JSON OBJECT ROOT';
 
 		let tmpContainerPropertyAddress = (typeof(pContainerPropertyAddress) !== 'undefined') ? pContainerPropertyAddress : false;
-		let tmpContainerPropertyIndex = (typeof(pContainerIndex) !== 'undefined') ? pContainerIndex : false; 
+		let tmpContainerPropertyIndex = (typeof(pContainerIndex) !== 'undefined') ? pContainerIndex : false;
 
 		if (this._Settings.DebugLog)
 		{
@@ -850,7 +849,7 @@ class Informary
 						{
 							// This is an array element
 							tmpFormElement = this._Dependencies.jquery(`
-								input[data-i-form="${this._Settings.Form}"][data-i-datum="${tmpPropertyAddress}"][data-i-container="${tmpContainerPropertyAddress}"][data-i-index="${tmpContainerPropertyIndex}"], 
+								input[data-i-form="${this._Settings.Form}"][data-i-datum="${tmpPropertyAddress}"][data-i-container="${tmpContainerPropertyAddress}"][data-i-index="${tmpContainerPropertyIndex}"],
 								select[data-i-form="${this._Settings.Form}"][data-i-datum="${tmpPropertyAddress}"][data-i-container="${tmpContainerPropertyAddress}"][data-i-index="${tmpContainerPropertyIndex}"],
 								textarea[data-i-form="${this._Settings.Form}"][data-i-datum="${tmpPropertyAddress}"][data-i-container="${tmpContainerPropertyAddress}"][data-i-index="${tmpContainerPropertyIndex}"]
 							`);
@@ -858,7 +857,7 @@ class Informary
 						else
 						{
 							tmpFormElement = this._Dependencies.jquery(`
-								input[data-i-form="${this._Settings.Form}"][data-i-datum="${tmpPropertyAddress}"], 
+								input[data-i-form="${this._Settings.Form}"][data-i-datum="${tmpPropertyAddress}"],
 								select[data-i-form="${this._Settings.Form}"][data-i-datum="${tmpPropertyAddress}"],
 								textarea[data-i-form="${this._Settings.Form}"][data-i-datum="${tmpPropertyAddress}"]
 							`);
@@ -883,11 +882,11 @@ class Informary
 							{
 								this._Dependencies.jquery(tmpFormElement).attr('data-i-guid', tmpRecord);
 							}
-						}	
+						}
 						break;
 				}
 			});
-		
+
 		if (!pParentPropertyAddress)
 		{
 			return fCallback(tmpRecoveryState);
@@ -938,7 +937,7 @@ class Informary
 				{
 					tmpFormValue = null;
 				}
-				
+
 				if (typeof(tmpFormValueAddress) === 'undefined')
 				{
 					tmpFormValueAddress = '__ERROR.UnsetDatum.'+tmpUnknownValueIndex;

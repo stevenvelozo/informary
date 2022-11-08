@@ -40,8 +40,8 @@
   },
   "homepage": "https://github.com/stevenvelozo/informary#readme",
   "devDependencies": {
-    "@babel/core": "^7.17.9",
-    "@babel/preset-env": "^7.16.11",
+    "@babel/core": "^7.20.2",
+    "@babel/preset-env": "^7.20.2",
     "@testing-library/dom": "^8.13.0",
     "async": "^3.2.3",
     "browserify": "^17.0.0",
@@ -63,5 +63,8 @@
     "cachetrax": "^1.0.0",
     "deep-object-diff": "^1.1.7",
     "jquery": "^3.6.0"
-  }
+  },
+  "browserslist": [
+    "> 0.01%"
+  ]
 }

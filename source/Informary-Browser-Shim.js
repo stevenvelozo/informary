@@ -11,6 +11,8 @@
 var libInformary = require('./Informary.js');
 
 if (typeof(window) === 'object')
-    window.Informary = libInformary;
+{
+	window.Informary = libInformary;
+}
 
 module.exports = libInformary;
