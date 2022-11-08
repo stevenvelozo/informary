@@ -95,6 +95,16 @@ class Informary
 		if (!this._LocalStorage)
 		{
 			this._LocalStorage = window.localStorage;
+			if (!this._LocalStorage)
+			{
+				const cache = { };
+				this._LocalStorage =
+				{
+					setItem: (key, value) => { cache[key] = value; },
+					getItem: (key) => { return cache[key]; },
+					removeItem: (key) => { delete cache[key]; },
+				};
+			}
 		}
 	}
 
