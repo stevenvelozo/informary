@@ -1,13 +1,14 @@
 {
   "name": "informary",
-  "version": "2.0.18",
+  "version": "2.0.19",
   "description": "Informary form data marshaling library.",
   "main": "source/Informary.js",
   "scripts": {
     "start": "node source/Informary.js",
-    "coverage": "nyc npm run test && nyc report --reporter=lcov",
+    "coverage": "./node_modules/.bin/nyc --reporter=lcov --reporter=text-lcov ./node_modules/mocha/bin/_mocha -- -u tdd -R spec",
     "test": "./node_modules/.bin/mocha -u tdd -R spec",
     "build": "./node_modules/.bin/gulp build",
+    "build-compatible": "GULP_CUSTOM_BUILD_TARGET=compatible ./node_modules/.bin/gulp build",
     "docker-dev-build-image": "docker build ./ -t retold/informary:local",
     "docker-dev-run": "docker run -it -d --name informary-dev -p 12349:8080 -p 5500:5500 -v \"$PWD/.config:/home/coder/.config\"  -v \"$PWD:/home/coder/informary\" -u \"$(id -u):$(id -g)\" -e \"DOCKER_USER=$USER\" retold/informary:local"
   },
@@ -40,21 +41,20 @@
   },
   "homepage": "https://github.com/stevenvelozo/informary#readme",
   "devDependencies": {
-    "@babel/core": "^7.20.2",
-    "@babel/preset-env": "^7.20.2",
+    "@babel/core": "^7.21.5",
+    "@babel/preset-env": "^7.21.5",
     "@testing-library/dom": "^8.13.0",
     "async": "^3.2.3",
     "browserify": "^17.0.0",
-    "chai": "4.3.6",
+    "chai": "4.3.7",
     "gulp": "^4.0.2",
     "gulp-babel": "^8.0.0",
-    "gulp-buble": "^0.9.0",
+    "gulp-env": "^0.4.0",
     "gulp-sourcemaps": "^3.0.0",
     "gulp-terser": "^2.1.0",
     "gulp-util": "^3.0.8",
     "jsdom": "^19.0.0",
-    "mocha": "9.2.2",
-    "npm-check-updates": "^12.5.9",
+    "mocha": "10.2.0",
     "nyc": "^15.1.0",
     "vinyl-buffer": "^1.0.1",
     "vinyl-source-stream": "^2.0.0"
@@ -63,8 +63,5 @@
     "cachetrax": "^1.0.0",
     "deep-object-diff": "^1.1.7",
     "jquery": "^3.6.0"
-  },
-  "browserslist": [
-    "> 0.01%"
-  ]
+  }
 }

@@ -6,31 +6,21 @@
 * @author      Steven Velozo <steven@velozo.com>
 */
 
-const { expect } = require("chai");
-var Chai = require("chai");
-var Expect = Chai.expect;
+const Chai = require("chai");
+const Expect = Chai.expect;
 
 const libFS = require("fs");
 
 // Basic harness form HTML
-let tmpHarnessHTML = libFS.readFileSync(`${__dirname}/harness/informary_html_test_harness.html`);
-let tmpHarnessDataObject = require(`./harness/informary_harness_data_1.json`);
-
-let getFreshHarnessDataObject = JSON.parse(JSON.stringify(tmpHarnessDataObject));
+const tmpHarnessHTML = libFS.readFileSync(`${__dirname}/harness/informary_html_test_harness.html`);
+const tmpHarnessDataObject = require(`./harness/informary_harness_data_1.json`);
 
 const libJquery = require("jquery");
 
 const libJSDOM = require("jsdom");
 const { JSDOM } = libJSDOM;
 
-var libInformary = require('../source/Informary.js');
-
-
-var _MockSettings = (
-{
-	Product: 'Informary Test',
-	ProductVersion: '0.0.0'
-});
+const libInformary = require('../source/Informary.js');
 
 suite
 (
@@ -47,10 +37,10 @@ suite
 					'Checking Deltas...',
 					(fDone)=>
 					{
-						var tmpDOM = new JSDOM(tmpHarnessHTML);
-						var tmpInformary = new libInformary({Form:"SampleForm", __VirtualDOM:tmpDOM.window, DebugLog:true}, 'Context-1');
+						let tmpDOM = new JSDOM(tmpHarnessHTML);
+						let tmpInformary = new libInformary({Form:"SampleForm", __VirtualDOM:tmpDOM.window, DebugLog:true}, 'Context-1');
 
-						var tmpDataObject = {};
+						let tmpDataObject = {};
 						tmpInformary.marshalFormToData(tmpDataObject,
 							function(pError)
 							{
@@ -61,7 +51,7 @@ suite
 									console.log(JSON.stringify(tmpDataObject,null,4));
 								}
 
-								expect(tmpDataObject.Header.WorkDate).to.equal('2010-05-19');
+								Expect(tmpDataObject.Header.WorkDate).to.equal('2010-05-19');
 
 								fDone();
 							});
@@ -73,13 +63,13 @@ suite
 					(fDone)=>
 					{
 						// jsDOM must be instantiated with a url for the localStorage to work.
-						var tmpDOM = new JSDOM(tmpHarnessHTML, { url: "https://test.informary.org/" });
+						let tmpDOM = new JSDOM(tmpHarnessHTML, { url: "https://test.informary.org/" });
 
-						var tmpInformary = new libInformary({Form:"SampleForm", __VirtualDOM:tmpDOM.window, DebugLog:true}, 'Context-1');
+						let tmpInformary = new libInformary({Form:"SampleForm", __VirtualDOM:tmpDOM.window, DebugLog:true}, 'Context-1');
 
 						tmpInformary.setStorageProvider(tmpDOM.window.localStorage);
 	
-						var tmpDataObject = tmpHarnessDataObject;
+						let tmpDataObject = tmpHarnessDataObject;
 
 						tmpInformary.marshalDataToForm(tmpDataObject,
 							function(pError)
@@ -93,10 +83,10 @@ suite
 
 								console.log(JSON.stringify(tmpDataObject,null,4));
 
-								var tmpJquery = libJquery(tmpDOM.window);
+								let tmpJquery = libJquery(tmpDOM.window);
 								//console.log(JSON.stringify(tmpDataObject,null,4));
-								expect(tmpJquery('#workDate').val()).to.equal('2020-11-09');
-								expect(tmpJquery('#row_equipment_1').val()).to.equal('Ford F450 Pickup');
+								Expect(tmpJquery('#workDate').val()).to.equal('2020-11-09');
+								Expect(tmpJquery('#row_equipment_1').val()).to.equal('Ford F450 Pickup');
 
 								fDone();
 							});

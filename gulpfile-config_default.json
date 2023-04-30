@@ -1,0 +1,11 @@
+{
+	"EntrypointInputSourceFile": "./source/Informary-Browser-Shim.js",
+
+	"LibraryObjectName": "Informary",
+
+	"LibraryOutputFolder": "./dist/",
+
+	"LibraryUniminifiedFileName": "informary.js",
+
+	"LibraryMinifiedFileName": "informary.min.js"
+}

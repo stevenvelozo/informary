@@ -18,6 +18,10 @@ class Informary
 		this._Dependencies = {};
 		this._Dependencies.jqueryLibrary = require('jquery');
 
+		// Adding a container for non-html state to be stored in, which will be marshalled into and out of the passed in FormData.
+		this._NonHTMLState = {};
+		this._NonHTMLStateProperty = `__InformaryNonHTMLState`;
+
 		this._Settings = (typeof(pSettings) === 'object') ? pSettings : (
 			{
 				// The form we are dealing with (this is a hash set on the form itself)
@@ -779,6 +783,11 @@ class Informary
 		}
 	}
 
+	get nonFormData ()
+	{
+		return this._NonHTMLState;
+	}
+
 	marshalDataToForm (pRecordObject, fCallback, pParentPropertyAddress, pContainerPropertyAddress, pContainerIndex)
 	{
 		// Because this is recursive, we only want to call this on the outermost call of the stack.
@@ -814,6 +823,17 @@ class Informary
 		if (this._Settings.DebugLog)
 		{
 			this.log.debug(`Informary Data->Form found parent address [${tmpParentPropertyAddress}] and is parsing properties`);
+		}
+
+		if (tmpParentPropertyAddressString == 'JSON OBJECT ROOT')
+		{
+			// Check if there is data to go into the NonHTMLState object
+			if ((pRecordObject.hasOwnProperty(this._NonHTMLStateProperty)) && (typeof(pRecordObject[this._NonHTMLStateProperty]) === 'object'))
+			{
+				// Every time we marshal data to the form, we will overwrite this.
+				// TODO: Should we warn or anything?  This is a potentially destructive operation.
+				this._NonHTMLState = pRecordObject[this._NonHTMLStateProperty];
+			}
 		}
 
 		let tmpRecordObjectKeys = Object.keys(pRecordObject);
@@ -927,6 +947,9 @@ class Informary
 			`);
 
 		let tmpUnknownValueIndex = 0;
+
+		// For any state that the form doesn't want to store in html elements, but still be merged into the informary record object
+		pRecordObject[this._NonHTMLStateProperty] = this._NonHTMLState;
 
 		this._Dependencies.jquery.each(tmpFormValueElements,
 			(pRecordIndex, pRecordAddress) =>
