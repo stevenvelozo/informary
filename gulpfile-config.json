@@ -5,7 +5,7 @@
 
 	"LibraryOutputFolder": "./dist/",
 
-	"LibraryUniminifiedFileName": "informary.compatible.js",
+	"LibraryUniminifiedFileName": "informary.js",
 
-	"LibraryMinifiedFileName": "informary.compatible.min.js"
+	"LibraryMinifiedFileName": "informary.min.js"
 }

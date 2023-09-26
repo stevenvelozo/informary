@@ -16,7 +16,20 @@ class Informary
 	constructor(pSettings, pContext, pContextGUID)
 	{
 		this._Dependencies = {};
-		this._Dependencies.jqueryLibrary = require('jquery');
+		if ((typeof(window) == 'object') && (typeof(window.jQuery) == 'function'))
+		{
+			this._Dependencies.jqueryLibrary = window.jQuery;
+		}
+		else if (pSettings.jQuery)
+		{
+			// jQuery was passed in as part of the settings
+			this._Dependencies.jqueryLibrary = pSettings.jQuery;
+		}
+		else
+		{
+			throw new Error('No jQuery found in the window object or as a property of pSettings -- informary cannot function without jQuery.');
+		}
+//		this._Dependencies.jqueryLibrary = require('jquery');
 
 		// Adding a container for non-html state to be stored in, which will be marshalled into and out of the passed in FormData.
 		this._NonHTMLState = {};

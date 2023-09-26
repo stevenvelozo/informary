@@ -1,6 +1,6 @@
 {
   "name": "informary",
-  "version": "2.0.20",
+  "version": "2.0.21",
   "description": "Informary form data marshaling library.",
   "main": "source/Informary.js",
   "scripts": {
@@ -53,6 +53,7 @@
     "gulp-sourcemaps": "^3.0.0",
     "gulp-terser": "^2.1.0",
     "gulp-util": "^3.0.8",
+    "jquery": "^3.6.0",
     "jsdom": "^19.0.0",
     "mocha": "10.2.0",
     "nyc": "^15.1.0",
@@ -61,7 +62,6 @@
   },
   "dependencies": {
     "cachetrax": "^1.0.0",
-    "deep-object-diff": "^1.1.7",
-    "jquery": "^3.6.0"
+    "deep-object-diff": "^1.1.7"
   }
 }

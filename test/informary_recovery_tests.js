@@ -38,7 +38,7 @@ suite
 					(fDone)=>
 					{
 						let tmpDOM = new JSDOM(tmpHarnessHTML);
-						let tmpInformary = new libInformary({Form:"SampleForm", __VirtualDOM:tmpDOM.window, DebugLog:true}, 'Context-1');
+						let tmpInformary = new libInformary({Form:"SampleForm", jQuery:libJquery, __VirtualDOM:tmpDOM.window, DebugLog:true}, 'Context-1');
 
 						let tmpDataObject = {};
 						tmpInformary.marshalFormToData(tmpDataObject,
@@ -65,7 +65,7 @@ suite
 						// jsDOM must be instantiated with a url for the localStorage to work.
 						let tmpDOM = new JSDOM(tmpHarnessHTML, { url: "https://test.informary.org/" });
 
-						let tmpInformary = new libInformary({Form:"SampleForm", __VirtualDOM:tmpDOM.window, DebugLog:true}, 'Context-1');
+						let tmpInformary = new libInformary({Form:"SampleForm", jQuery:libJquery, __VirtualDOM:tmpDOM.window, DebugLog:true}, 'Context-1');
 
 						tmpInformary.setStorageProvider(tmpDOM.window.localStorage);
 	

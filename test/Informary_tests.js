@@ -26,7 +26,8 @@ const libInformary = require('../source/Informary.js');
 const _MockSettings = (
 {
 	Product: 'Informary Test',
-	ProductVersion: '0.0.0'
+	ProductVersion: '0.0.0',
+	jQuery: libJquery
 });
 
 suite
@@ -73,6 +74,7 @@ suite
 							{
 								Server:'https://my.server.com/1.0/',
 								Entity:'Animal',
+								jQuery: libJquery,
 								Cached:false
 							});
 						Expect(testInformary).to.be.an('object', 'Informary should initialize as an object directly from the require statement.');
@@ -138,7 +140,7 @@ suite
 					(fDone)=>
 					{
 						let tmpDOM = new JSDOM(tmpHarnessHTML);
-						let tmpInformary = new libInformary({Form:"SampleForm", __VirtualDOM:tmpDOM.window, DebugLog:true}, 'Context-1');
+						let tmpInformary = new libInformary({Form:"SampleForm", jQuery: libJquery, __VirtualDOM:tmpDOM.window, DebugLog:true}, 'Context-1');
 
 						tmpInformary.nonFormData.SomeValue = 'Some Value';
 
@@ -169,12 +171,12 @@ suite
 						// jsDOM must be instantiated with a url for the localStorage to work.
 						let tmpDOM = new JSDOM(tmpHarnessHTML, { url: "https://test.informary.org/" });
 
-						let tmpInformary = new libInformary({Form:"SampleForm", __VirtualDOM:tmpDOM.window, DebugLog:true}, 'Context-1');
+						let tmpInformary = new libInformary({Form:"SampleForm", jQuery: libJquery,__VirtualDOM:tmpDOM.window, DebugLog:true}, 'Context-1');
 
 						tmpInformary.nonFormData.SomeValue = 'Some Value';
 
 						tmpInformary.setStorageProvider(tmpDOM.window.localStorage);
-	
+
 						let tmpDataObject = tmpHarnessDataObject;
 
 						tmpInformary.marshalDataToForm(tmpDataObject,
@@ -206,10 +208,10 @@ suite
 						// jsDOM must be instantiated with a url for the localStorage to work.
 						let tmpDOM = new JSDOM(tmpHarnessHTML, { url: "https://test.informary.org/" });
 
-						let tmpInformary = new libInformary({Form:"SampleForm", __VirtualDOM:tmpDOM.window, DebugLog:true}, 'Context-1');
+						let tmpInformary = new libInformary({Form:"SampleForm", jQuery: libJquery,__VirtualDOM:tmpDOM.window, DebugLog:true}, 'Context-1');
 
 						tmpInformary.setStorageProvider(tmpDOM.window.localStorage);
-	
+
 						let tmpDataObject = JSON.parse(JSON.stringify(tmpHarnessDataObject));
 						tmpDataObject.NullValue = null;
 
@@ -242,10 +244,10 @@ suite
 						// jsDOM must be instantiated with a url for the localStorage to work.
 						let tmpDOM = new JSDOM(tmpHarnessHTML, { url: "https://test.informary.org/" });
 
-						let tmpInformary = new libInformary({Form:"SampleForm", __VirtualDOM:tmpDOM.window, DebugLog:true}, 'Context-1');
+						let tmpInformary = new libInformary({Form:"SampleForm", jQuery: libJquery,__VirtualDOM:tmpDOM.window, DebugLog:true}, 'Context-1');
 
 						tmpInformary.setStorageProvider(tmpDOM.window.localStorage);
-	
+
 						let tmpDataObject = JSON.parse(JSON.stringify(tmpHarnessDataObject));
 						tmpDataObject.NullValue = null;
 
@@ -278,7 +280,7 @@ suite
 						// jsDOM must be instantiated with a url for the localStorage to work.
 						let tmpDOM = new JSDOM(tmpHarnessHTML, { url: "https://test.informary.org/" });
 
-						let tmpInformary = new libInformary({Form:"SampleForm", __VirtualDOM:tmpDOM.window, DebugLog:true}, 'Context-1');
+						let tmpInformary = new libInformary({Form:"SampleForm", jQuery: libJquery, __VirtualDOM:tmpDOM.window, DebugLog:true}, 'Context-1');
 
 						console.log(`Default nonFormData: ${JSON.stringify(tmpInformary.nonFormData)}`);
 						Expect(tmpInformary.nonFormData).to.be.an('object');
