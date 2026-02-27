@@ -46,7 +46,7 @@
     "gulp-util": "^3.0.8",
     "jquery": "^3.6.0",
     "jsdom": "^19.0.0",
-    "quackage": "^1.0.57"
+    "quackage": "^1.0.58"
   },
   "dependencies": {
     "cachetrax": "^1.0.0",
