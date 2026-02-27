@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node source/Informary.js",
     "coverage": "npx quack coverage",
-    "test": "npx mocha -u tdd --exit -R spec",
+    "test": "npx quack test",
     "build": "npx quack build",
     "build-compatible": "GULP_CUSTOM_BUILD_TARGET=compatible npx quack build",
     "docker-dev-build-image": "docker build ./ -t retold/informary:local",
